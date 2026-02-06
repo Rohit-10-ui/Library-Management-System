@@ -1,0 +1,141 @@
+/* Reset */
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(to right, #e3f2fd, #ffffff);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Card */
+.auth-container {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  max-width: 900px;
+  width: 100%;
+}
+
+/* Auth Content Layout */
+.auth-content {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Auth Image */
+.auth-image {
+  flex: 1;
+  text-align: center;
+}
+
+.auth-image img {
+  max-width: 100%;
+  height: auto;
+  width: 280px;
+  border-radius: 12px;
+}
+
+/* Auth Form */
+.auth-form {
+  flex: 1;
+  min-width: 320px;
+}
+
+/* Heading */
+.auth-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #1565c0;
+}
+
+/* Inputs */
+.auth-container input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 6px;
+  border: 1px solid #bbb;
+  font-size: 14px;
+}
+
+.auth-container input:focus {
+  outline: none;
+  border-color: #1565c0;
+}
+
+/* Button */
+.auth-container button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 10px;
+  background: #1565c0;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.auth-container button:hover {
+  background: #0d47a1;
+}
+
+/* Errors */
+.error {
+  color: red;
+  font-size: 12px;
+}
+
+/* Link text */
+.switch-link {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.switch-link a {
+  color: #1565c0;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.switch-link a:hover {
+  text-decoration: underline;
+}
+
+/* LMS Title */
+.lms-title {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .auth-content {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .auth-image {
+    display: none;
+  }
+
+  .auth-form {
+    min-width: auto;
+  }
+
+  .auth-container {
+    padding: 25px;
+    max-width: 100%;
+  }
+}
