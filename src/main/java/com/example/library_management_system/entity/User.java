@@ -1,6 +1,13 @@
 package com.example.library_management_system.entity;
 
+import java.time.LocalDateTime;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -8,8 +15,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Data;
 
+
 @Entity
 @Data
+@EntityListeners(AuditingEntityListener.class)
 public class User {
 
     @Id
@@ -36,4 +45,14 @@ public class User {
     private String librarySection;
 
     private String idProofPath;
+    
+    private Long verified_by  ;// ID of admin/librarian who verified
+    private LocalDateTime verified_at ;
+    
+    @CreatedDate
+    private LocalDateTime created_at;
+
+    @LastModifiedDate
+    private LocalDateTime updated_at;
+
 }
