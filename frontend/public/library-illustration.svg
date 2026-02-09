@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
+  <!-- Background -->
+  <rect width="300" height="300" fill="#f0f4ff"/>
+  
+  <!-- Bookshelf -->
+  <rect x="30" y="100" width="240" height="150" fill="#8b6f47" stroke="#5d4a2e" stroke-width="2"/>
+  
+  <!-- Shelves -->
+  <line x1="30" y1="140" x2="270" y2="140" stroke="#5d4a2e" stroke-width="3"/>
+  <line x1="30" y1="180" x2="270" y2="180" stroke="#5d4a2e" stroke-width="3"/>
+  <line x1="30" y1="220" x2="270" y2="220" stroke="#5d4a2e" stroke-width="3"/>
+  
+  <!-- Books on shelf 1 -->
+  <rect x="40" y="110" width="20" height="30" fill="#e74c3c" stroke="#333" stroke-width="1"/>
+  <rect x="65" y="110" width="20" height="35" fill="#3498db" stroke="#333" stroke-width="1"/>
+  <rect x="90" y="110" width="20" height="28" fill="#2ecc71" stroke="#333" stroke-width="1"/>
+  <rect x="115" y="110" width="20" height="32" fill="#f39c12" stroke="#333" stroke-width="1"/>
+  <rect x="140" y="110" width="20" height="29" fill="#9b59b6" stroke="#333" stroke-width="1"/>
+  <rect x="165" y="110" width="20" height="33" fill="#e74c3c" stroke="#333" stroke-width="1"/>
+  <rect x="190" y="110" width="20" height="30" fill="#3498db" stroke="#333" stroke-width="1"/>
+  <rect x="215" y="110" width="20" height="31" fill="#2ecc71" stroke="#333" stroke-width="1"/>
+  <rect x="240" y="110" width="20" height="30" fill="#f39c12" stroke="#333" stroke-width="1"/>
+  
+  <!-- Books on shelf 2 -->
+  <rect x="40" y="150" width="20" height="30" fill="#3498db" stroke="#333" stroke-width="1"/>
+  <rect x="65" y="150" width="20" height="29" fill="#2ecc71" stroke="#333" stroke-width="1"/>
+  <rect x="90" y="150" width="20" height="31" fill="#e74c3c" stroke="#333" stroke-width="1"/>
+  <rect x="115" y="150" width="20" height="28" fill="#f39c12" stroke="#333" stroke-width="1"/>
+  <rect x="140" y="150" width="20" height="32" fill="#9b59b6" stroke="#333" stroke-width="1"/>
+  <rect x="165" y="150" width="20" height="30" fill="#3498db" stroke="#333" stroke-width="1"/>
+  <rect x="190" y="150" width="20" height="29" fill="#e74c3c" stroke="#333" stroke-width="1"/>
+  <rect x="215" y="150" width="20" height="31" fill="#2ecc71" stroke="#333" stroke-width="1"/>
+  <rect x="240" y="150" width="20" height="30" fill="#f39c12" stroke="#333" stroke-width="1"/>
+  
+  <!-- Books on shelf 3 -->
+  <rect x="40" y="190" width="20" height="30" fill="#2ecc71" stroke="#333" stroke-width="1"/>
+  <rect x="65" y="190" width="20" height="32" fill="#9b59b6" stroke="#333" stroke-width="1"/>
+  <rect x="90" y="190" width="20" height="28" fill="#f39c12" stroke="#333" stroke-width="1"/>
+  <rect x="115" y="190" width="20" height="31" fill="#3498db" stroke="#333" stroke-width="1"/>
+  <rect x="140" y="190" width="20" height="29" fill="#e74c3c" stroke="#333" stroke-width="1"/>
+  <rect x="165" y="190" width="20" height="30" fill="#2ecc71" stroke="#333" stroke-width="1"/>
+  <rect x="190" y="190" width="20" height="32" fill="#f39c12" stroke="#333" stroke-width="1"/>
+  <rect x="215" y="190" width="20" height="30" fill="#9b59b6" stroke="#333" stroke-width="1"/>
+  <rect x="240" y="190" width="20" height="31" fill="#3498db" stroke="#333" stroke-width="1"/>
+  
+  <!-- Reading lamp -->
+  <circle cx="260" cy="60" r="8" fill="#f39c12" stroke="#333" stroke-width="1"/>
+  <rect x="258" y="68" width="4" height="25" fill="#555"/>
+  <ellipse cx="260" cy="95" rx="20" ry="5" fill="#fff8dc" opacity="0.7"/>
+  
+  <!-- Decorative elements -->
+  <circle cx="50" cy="30" r="25" fill="#3498db" opacity="0.3"/>
+  <circle cx="250" cy="40" r="30" fill="#2ecc71" opacity="0.3"/>
+  <circle cx="150" cy="20" r="35" fill="#e74c3c" opacity="0.2"/>
+</svg>
