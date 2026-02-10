@@ -31,7 +31,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.projectlombok:lombok'
-
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
 
     // MySQL Driver
     runtimeOnly 'com.mysql:mysql-connector-j'
