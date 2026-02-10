@@ -230,6 +230,25 @@ const Register = () => {
 
     // TODO: replace with real API call
     // fetch("/api/register", { method: "POST", body: fd })
+
+    fetch("http://localhost:8080/api/auth/register", {
+      method: "POST",
+      body: fd,
+    })
+      .then(response => {
+        if (!response.ok) throw new Error("Registration failed");
+        return response.json();
+      })
+      .then(data => {
+        console.log("Success:", data);
+        setLoading(false);
+        setSubmitted(true);
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        setLoading(false);
+        alert("Registration failed. Please try again.");
+      });
     console.log("Register Payload (FormData):", Object.fromEntries(fd));
     setTimeout(() => { setLoading(false); setSubmitted(true); }, 1600);
   };

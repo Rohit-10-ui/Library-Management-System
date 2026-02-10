@@ -69,6 +69,26 @@ const Login = () => {
 
     setLoading(true);
     // TODO: replace with real API call
+    fetch("http://localhost:8080/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "USER", ...formData }),
+    })
+      .then(response => {
+        if (!response.ok) throw new Error("Login failed");
+        return response.json();
+      })
+      .then(data => {
+        console.log("Login Success:", data);
+        if (data.token) localStorage.setItem("token", data.token);
+        window.location.href = "/dashboard";
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        setLoading(false);
+        alert("Login failed. Please check your credentials.");
+      });
+      
     setTimeout(() => {
       setLoading(false);
       console.log("Login Payload:", { role: "USER", ...formData });
