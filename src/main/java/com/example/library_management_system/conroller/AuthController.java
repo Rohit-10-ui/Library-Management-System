@@ -1,10 +1,12 @@
 package com.example.library_management_system.conroller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,8 +14,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.library_management_system.dto.AcademicInfoDTO;
 import com.example.library_management_system.dto.AddressDTO;
+import com.example.library_management_system.dto.LoginRequest;
 import com.example.library_management_system.dto.PersonalDetails;
 import com.example.library_management_system.dto.WorkExperienceDTO;
+import com.example.library_management_system.service.LoginService;
 import com.example.library_management_system.service.SignupService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +27,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
-
+        
+    private final LoginService loginService;
     private final SignupService service;
     private final ObjectMapper mapper;
 
@@ -53,5 +58,14 @@ public class AuthController {
         service.signup(role, personal, address, academics, work, employeeId, librarySection, idProof);
 
         return ResponseEntity.ok("Request sent to admin");
+    }
+
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+
+        String token = loginService.login(request.getUsername(), request.getPassword());
+        System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@LOGIN CONTROLLERR@@@@@@@@@@");
+        return ResponseEntity.ok(Map.of("token", token));
     }
 }
