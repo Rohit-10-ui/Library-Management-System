@@ -51,7 +51,7 @@ public class User {
     private String password;
     private String idProofPath;
 
-    private Long verified_by;
+    private String verified_by;
     private LocalDateTime verified_at;
 
     @CreatedDate
@@ -69,4 +69,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<WorkExperience> workExperienceList;
+
+   
+    
 }
