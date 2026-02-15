@@ -69,7 +69,7 @@ const Login = () => {
 
     setLoading(true);
     // TODO: replace with real API call
-    fetch("http://localhost:8080/api/auth/login", {
+    fetch("http://localhost:8080/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ role: "USER", ...formData }),
