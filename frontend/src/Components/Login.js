@@ -69,7 +69,7 @@ const Login = () => {
 
     setLoading(true);
     // TODO: replace with real API call
-    fetch("http://localhost:8080/api/login", {
+    fetch("http://localhost:8080/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ role: "USER", ...formData }),
@@ -81,7 +81,7 @@ const Login = () => {
       .then(data => {
         console.log("Login Success:", data);
         if (data.token) localStorage.setItem("token", data.token);
-        window.location.href = "/dashboard";
+        window.location.href = "/admindashboard";
       })
       .catch(error => {
         console.error("Error:", error);
