@@ -1,0 +1,6 @@
+package com.example.library_management_system.service;
+public interface LoginService {
+    String login(String username, String password);
+    void resetPassword(String token, String newPassword);
+    void forgotPassword(String email);
+}
