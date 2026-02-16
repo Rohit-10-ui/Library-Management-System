@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.example.library_management_system.dto.AdminDashboardDto;
 import com.example.library_management_system.dto.PersonalDetails;
-import com.example.library_management_system.entity.User;
 public interface AdminService {
 
     List<PersonalDetails> fetchRegistrations();
@@ -15,4 +14,6 @@ public interface AdminService {
     void reject(String username);
     AdminDashboardDto getDashboard();
     String generatePassword();
+    byte[] getIdProof(String username);
+
 }

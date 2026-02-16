@@ -72,7 +72,7 @@ public class SignupServiceImpl implements SignupService {
         
         user.setIdProofPath(path.toString());
 
-            user.setIdProofPath(file.getOriginalFilename());
+           
 
         // Address
         Address address = new Address();

@@ -1,6 +1,10 @@
 package com.example.library_management_system.service;
 
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -101,6 +105,19 @@ public AdminDashboardDto getDashboard() {
             pending,
             rejected
     );
+}
+@Override
+public byte[] getIdProof(String username) {
+
+    User user = repo.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    try {
+        Path path = Paths.get(user.getIdProofPath());
+        return Files.readAllBytes(path);
+    } catch (IOException e) {
+        throw new RuntimeException("File not found");
+    }
 }
 
 }

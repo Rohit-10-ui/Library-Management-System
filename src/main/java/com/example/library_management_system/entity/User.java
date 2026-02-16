@@ -8,6 +8,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
@@ -29,6 +30,7 @@ public class User {
     private Long id;
 
     // personal
+    @Column(unique = true, nullable = false)
     private String username;
     private String firstName;
     private String lastName;

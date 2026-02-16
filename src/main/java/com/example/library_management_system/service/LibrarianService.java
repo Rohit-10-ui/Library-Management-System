@@ -13,4 +13,6 @@ List<PersonalDetails> fetchRegistrations();
     void reject(String username,String librarianName);
     AdminDashboardDto getDashboard();
     String generatePassword();
+    byte[] getIdProof(String username);
+
 }

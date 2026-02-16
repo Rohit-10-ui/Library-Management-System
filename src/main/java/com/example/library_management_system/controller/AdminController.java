@@ -70,4 +70,14 @@ public ResponseEntity<AdminDashboardDto> dashboard() {
             body);
         return ResponseEntity.ok("Rejected");
     }
+    @GetMapping("/idproof/{username}")
+    public ResponseEntity<byte[]> getIdProof(@PathVariable String username) {
+
+    byte[] file = service.getIdProof(username);
+
+    return ResponseEntity.ok()
+            .header("Content-Disposition", "attachment; filename=idproof")
+            .body(file);
+}
+
 }
