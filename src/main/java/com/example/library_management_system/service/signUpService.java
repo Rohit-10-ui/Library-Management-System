@@ -8,15 +8,14 @@ import com.example.library_management_system.dto.AcademicInfoDTO;
 import com.example.library_management_system.dto.AddressDTO;
 import com.example.library_management_system.dto.PersonalDetails;
 import com.example.library_management_system.dto.WorkExperienceDTO;
-public interface SignupService {
-    void signup(
-            String role,
-            PersonalDetails personal,
-            AddressDTO address,
-            List<AcademicInfoDTO> academics,
-            List<WorkExperienceDTO> work,
-            String employeeId,
-            String librarySection,
-            MultipartFile file
-    );
+
+
+public interface SignupService<T> {
+    public void signup(String role,PersonalDetails personal,
+                       AddressDTO addressDto,
+                       List<AcademicInfoDTO> academics,
+                       List<WorkExperienceDTO> work,
+                       String employeeId,
+                       String librarySection,
+                       MultipartFile file);
 }

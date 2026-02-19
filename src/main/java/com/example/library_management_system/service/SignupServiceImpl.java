@@ -29,8 +29,7 @@ public class SignupServiceImpl implements SignupService {
     private final UserRepository userRepo;
 
     @Override
-    public void signup(String role,
-                       PersonalDetails personal,
+    public void signup(String role,PersonalDetails personal,
                        AddressDTO addressDto,
                        List<AcademicInfoDTO> academics,
                        List<WorkExperienceDTO> work,
