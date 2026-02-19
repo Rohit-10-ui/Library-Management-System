@@ -10,7 +10,7 @@ import com.example.library_management_system.dto.PersonalDetails;
 import com.example.library_management_system.dto.WorkExperienceDTO;
 
 
-public interface SignupService<T> {
+public interface SignupService {
     public void signup(String role,PersonalDetails personal,
                        AddressDTO addressDto,
                        List<AcademicInfoDTO> academics,
