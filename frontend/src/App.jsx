@@ -1,17 +1,20 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Landing from "./Landing";
-import Login from "./Login";
-//import Signup from "./Register";
-import Register from "./Register";
+import Login from "./Components/Login";
+import Register from "./Components/Register";
+import Landing from "./Components/Landing";
+import AdminDashboard from "./Components/Admindashboard";
+import BookMangement from "./Components/BookMangement";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/Register" element={<Register />} />
+        <Route path="/register" element={<Register />} />
+        <Route path='/login' element={<Login />} />
+        <Route path="/admindashboard" element={<AdminDashboard />}/>
+        <Route path="/books" element={<BookMangement />}/>
       </Routes>
     </BrowserRouter>
   );
