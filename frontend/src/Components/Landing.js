@@ -378,26 +378,12 @@ const Landing = () => {
                 <UserIcon size={48} color="white" />
               </div>
               <h3 style={styles.roleTitle}>Student / User</h3>
-              <ul style={styles.roleList}>
-                <li>Browse and search books</li>
-                <li>Reserve and borrow books</li>
-                <li>Track borrowing history</li>
-                <li>Receive notifications</li>
-                <li>Pay fines online</li>
-              </ul>
             </div>
             <div className="role-card" style={styles.roleCard}>
               <div style={{...styles.roleIcon, background: 'linear-gradient(135deg, #6B9BD1 0%, #B8D4ED 100%)'}}>
                 <ShieldIcon size={48} color="white" />
               </div>
               <h3 style={styles.roleTitle}>Librarian / Admin</h3>
-              <ul style={styles.roleList}>
-                <li>Manage book inventory</li>
-                <li>Issue and return books</li>
-                <li>Generate reports</li>
-                <li>Manage user accounts</li>
-                <li>Configure system settings</li>
-              </ul>
             </div>
           </div>
         </div>

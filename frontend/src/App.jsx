@@ -4,6 +4,8 @@ import Login from "./Components/Login";
 import Register from "./Components/Register";
 import Landing from "./Components/Landing";
 import AdminDashboard from "./Components/Admindashboard";
+import UserDashboard from "./Components/UserDashboard";
+import ForgotPassword from "./Components/Forgotpassword";
 
 function App() {
   return (
@@ -13,6 +15,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/admindashboard" element={<AdminDashboard />}/>
+        <Route path="/userdashboard" element={<UserDashboard />} />
+        <Route path='/forgotpassword' element={<ForgotPassword />} />
       </Routes>
     </BrowserRouter>
   );
