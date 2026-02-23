@@ -1,4 +1,12 @@
 package com.library_management_system.dto;
+
+import java.time.LocalDate;
+
+import com.library_management_system.entity.IssueStatus;
+
+import lombok.Builder;
+import lombok.Data;
+
 @Data
 @Builder
 public class IssueResponseDTO {
