@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/borrow")
 @RequiredArgsConstructor
 public class IssueController {
 

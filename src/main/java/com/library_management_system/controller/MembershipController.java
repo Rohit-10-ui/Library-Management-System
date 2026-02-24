@@ -15,7 +15,7 @@ import org.springframework.data.domain.Page;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/memberships")
+@RequestMapping("/memberships")
 @RequiredArgsConstructor
 public class MembershipController {
 
