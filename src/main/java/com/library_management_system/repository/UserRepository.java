@@ -24,10 +24,8 @@ long countByStatus(ApprovalStatus status);
 
     public List<User> findByStatus(ApprovalStatus approvalStatus);
 
-    List<User> findByMembership(Membership membership);
-
-    List<User> findByMembershipId(Long membershipId);
     
-Page<User> findByMembershipId(Long membershipId, Pageable pageable);
+    Page<User> findByMembership_Id(Long id, Pageable pageable);
+
 }
 

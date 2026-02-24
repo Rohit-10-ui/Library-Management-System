@@ -61,13 +61,13 @@ public class MembershipServiceImpl implements MembershipService {
 
   
 @Override
-public Page<User> getMembersByMembership(Long membershipId, int page, int size) {
+public Page<User> getMembersByMembership(Long Id, int page, int size) {
 
-    if (!repository.existsById(membershipId)) {
+    if (!repository.existsById(Id)) {
         throw new RuntimeException("Membership not found");
     }
 
     Pageable pageable = PageRequest.of(page, size);
-    return userRepository.findByMembershipId(membershipId, pageable);
+    return userRepository.findByMembership_Id(Id, pageable);
 }
 }
