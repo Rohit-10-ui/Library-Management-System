@@ -7,15 +7,18 @@ import com.library_management_system.entity.IssueStatus;
 import lombok.Builder;
 import lombok.Data;
 
-@Data
 @Builder
+@Data
 public class IssueResponseDTO {
 
     private Long issueId;
+    private String username;
     private String bookTitle;
+
     private LocalDate issueDate;
     private LocalDate dueDate;
     private LocalDate returnDate;
-    private Double penalty;
+
+    private double penalty;
     private IssueStatus status;
 }

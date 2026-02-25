@@ -23,7 +23,6 @@ import com.library_management_system.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -35,15 +34,17 @@ public class IssueServiceImpl implements IssueService {
 
     @Override
     public IssueResponseDTO issueBook(IssueRequestDTO dto) {
-        User user = getLoggedInUser();
+
+        User user = getUserByUsername(dto.getUsername());
         Book book = getBook(dto.getBookId());
-        validateBorrow(user);
+
+        validateBorrowLimit(user);
         validateAvailability(book);
 
-        Issue issue = createIssue(user, book);
+        Issue issue = buildIssue(user, book);
         updateAvailability(book, -1);
 
-        log.info("Book issued: {}", book.getTitle());
+        log.info("Book issued to {} : {}", user.getUsername(), book.getTitle());
         return mapToDTO(issueRepo.save(issue));
     }
 
@@ -55,10 +56,7 @@ public class IssueServiceImpl implements IssueService {
 
         double penalty = calculatePenalty(issue, dto.getStatus());
 
-        issue.setReturnDate(LocalDate.now());
-        issue.setPenalty(penalty);
-        issue.setStatus(dto.getStatus());
-
+        updateReturnDetails(issue, dto.getStatus(), penalty);
         updateAvailability(book, 1);
 
         log.info("Book returned: {}", book.getTitle());
@@ -77,28 +75,33 @@ public class IssueServiceImpl implements IssueService {
                 .stream().map(this::mapToDTO).toList();
     }
 
-    private User getLoggedInUser() {
-        String username = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
+    // ================= PRIVATE METHODS =================
+
+    private User getUserByUsername(String username) {
         return userRepo.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("user.not.found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("user.not.found"));
     }
 
     private Book getBook(Long id) {
         return bookRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("book.not.found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("book.not.found"));
     }
 
     private Issue getIssue(Long id) {
         return issueRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("issue.not.found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("issue.not.found"));
     }
 
-    private void validateBorrow(User user) {
-        long active = issueRepo.countByUserIdAndStatus(
-                user.getId(), IssueStatus.ISSUED);
+    private void validateBorrowLimit(User user) {
 
-        if (active >= user.getMembership().getBorrowLimit())
+        long activeIssues =
+                issueRepo.countByUserIdAndStatus(
+                        user.getId(), IssueStatus.ISSUED);
+
+        if (activeIssues >= user.getMembership().getBorrowLimit())
             throw new BusinessException("borrow.limit.exceeded");
     }
 
@@ -107,39 +110,71 @@ public class IssueServiceImpl implements IssueService {
             throw new BusinessException("book.not.available");
     }
 
-    private Issue createIssue(User user, Book book) {
+    private Issue buildIssue(User user, Book book) {
+
+        LocalDate today = LocalDate.now();
+
         Issue issue = new Issue();
         issue.setUser(user);
         issue.setBook(book);
-        issue.setIssueDate(LocalDate.now());
-        issue.setDueDate(LocalDate.now()
-                .plusDays(user.getMembership().getDurationDays()));
+        issue.setIssueDate(today);
+
+        issue.setDueDate(
+                today.plusDays(
+                        user.getMembership().getDurationDays()
+                )
+        );
+
         issue.setStatus(IssueStatus.ISSUED);
+
         return issue;
+    }
+
+    private void updateReturnDetails(Issue issue,
+                                     IssueStatus status,
+                                     double penalty) {
+
+        issue.setReturnDate(LocalDate.now());
+        issue.setPenalty(penalty);
+        issue.setStatus(status);
     }
 
     private double calculatePenalty(Issue issue, IssueStatus status) {
 
-        if (status == IssueStatus.LOST || status == IssueStatus.DAMAGED)
+        // LOST or DAMAGED → full MRP
+        if (status == IssueStatus.LOST ||
+                status == IssueStatus.DAMAGED)
             return issue.getBook().getMrp();
 
+        // Overdue fine
         if (LocalDate.now().isAfter(issue.getDueDate())) {
-            long days = ChronoUnit.DAYS.between(
-                    issue.getDueDate(), LocalDate.now());
-            return days *
-                    issue.getUser().getMembership().getLateFeePerDay();
+
+            long overdueDays =
+                    ChronoUnit.DAYS.between(
+                            issue.getDueDate(),
+                            LocalDate.now()
+                    );
+
+            return overdueDays *
+                    issue.getUser()
+                            .getMembership()
+                            .getLateFeePerDay();
         }
+
         return 0;
     }
 
     private void updateAvailability(Book book, int delta) {
-        book.setAvailability(book.getAvailability() + delta);
+        book.setAvailability(
+                book.getAvailability() + delta);
         bookRepo.save(book);
     }
 
     private IssueResponseDTO mapToDTO(Issue issue) {
+
         return IssueResponseDTO.builder()
                 .issueId(issue.getId())
+                .username(issue.getUser().getUsername())
                 .bookTitle(issue.getBook().getTitle())
                 .issueDate(issue.getIssueDate())
                 .dueDate(issue.getDueDate())
