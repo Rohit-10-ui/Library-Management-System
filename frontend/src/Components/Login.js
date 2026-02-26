@@ -121,7 +121,7 @@ const Login = () => {
           </div>
 
           {/* Floating book illustrations */}
-          <div className="login-panel__illustration">
+          {/* <div className="login-panel__illustration">
             <div className="login-panel__glow" />
             <div className="float-book float-book--1 book--orange">
               <div className="book-spine" /><div className="book-cover" />
@@ -132,7 +132,7 @@ const Login = () => {
             <div className="float-book float-book--3 book--blue">
               <div className="book-spine" /><div className="book-cover" />
             </div>
-          </div>
+          </div> */}
 
           <h2 className="login-panel__title">Welcome Back,<br />Reader</h2>
           <p className="login-panel__subtitle">

@@ -242,6 +242,7 @@ const Landing = () => {
         <ul style={styles.navLinks}>
           <li><a href="#home" onClick={(e) => { e.preventDefault(); scrollToSection('home'); }} style={{...styles.navLink, ...(activeNav === 'home' ? styles.navLinkActive : {})}}>Home</a></li>
           <li><a href="#features" onClick={(e) => { e.preventDefault(); scrollToSection('features'); }} style={{...styles.navLink, ...(activeNav === 'features' ? styles.navLinkActive : {})}}>Features</a></li>
+          <li><a href="/books" style={styles.navLink}>Browse Books</a></li>
           <li><a href="#how-it-works" onClick={(e) => { e.preventDefault(); scrollToSection('how-it-works'); }} style={{...styles.navLink, ...(activeNav === 'how-it-works' ? styles.navLinkActive : {})}}>How It Works</a></li>
           <li><a href="#tech" onClick={(e) => { e.preventDefault(); scrollToSection('tech'); }} style={{...styles.navLink, ...(activeNav === 'tech' ? styles.navLinkActive : {})}}>Technology</a></li>
         </ul>
@@ -266,12 +267,12 @@ const Landing = () => {
             Streamline book management, enhance user experience, and unlock powerful insights with our comprehensive library management solution.
           </p>
           <div className="hero-buttons" style={styles.heroButtons}>
-            <button style={styles.btnPrimary}>
-              <span>Get Started Free</span>
+            <button style={styles.btnPrimary} onClick={() => window.location.href = '/books'}>
+              <span>Browse Books</span>
               <span style={styles.btnArrow}>→</span>
             </button>
-            <button style={styles.btnSecondary}>
-              <span>Explore Features</span>
+            <button style={styles.btnSecondary} onClick={() => window.location.href = '/register'}>
+              <span>Get Started Free</span>
             </button>
           </div>
           <div style={styles.heroStats}>
@@ -546,6 +547,16 @@ const Landing = () => {
               <div style={styles.demoInfo}>
                 <h4 style={styles.demoTitle}>User Dashboard</h4>
                 <p style={styles.demoDescription}>Intuitive interface for browsing and managing books</p>
+              </div>
+            </div>
+            <div className="demo-card" style={styles.demoCard}>
+              <div style={styles.demoImage}>
+                <ChartIcon size={64} color="#FFD4B8" />
+                <div style={styles.demoOverlay}>Librarian Panel</div>
+              </div>
+              <div style={styles.demoInfo}>
+                <h4 style={styles.demoTitle}>Librarian Panel</h4>
+                <p style={styles.demoDescription}>Comprehensive control with analytics and insights</p>
               </div>
             </div>
             <div className="demo-card" style={styles.demoCard}>
@@ -1290,7 +1301,7 @@ const styles = {
   },
   demoGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
     gap: '3rem',
   },
   demoCard: {
