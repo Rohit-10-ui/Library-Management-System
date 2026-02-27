@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.library_management_system.dto.AssignMembershipDTO;
 import com.library_management_system.entity.Membership;
 import com.library_management_system.entity.User;
 import com.library_management_system.repository.MembershipRepository;
@@ -22,7 +23,21 @@ public class MembershipServiceImpl implements MembershipService {
 
     private final MembershipRepository repository;
     private final UserRepository userRepository;
+@Override
+public void assignMembership(AssignMembershipDTO dto) {
 
+    User user = userRepository.findByUsername(dto.getUsername())
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    Membership membership = repository.findById(dto.getMembershipId())
+            .orElseThrow(() -> new RuntimeException("Membership not found"));
+
+    if (!membership.getActive())
+        throw new RuntimeException("Membership plan is inactive");
+
+    user.setMembership(membership);
+    userRepository.save(user);
+}
     @Override
     public Membership create(Membership membership) {
         membership.setActive(true);

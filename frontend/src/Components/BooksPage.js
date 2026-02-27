@@ -143,6 +143,9 @@ const BooksPage = () => {
   const [activeTab, setActiveTab] = useState('books');
   
   // Books State
+  const [bookPage, setBookPage] = useState(0);
+const [bookSize, setBookSize] = useState(10);
+const [bookTotalPages, setBookTotalPages] = useState(0);
   const [books, setBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -187,254 +190,65 @@ const BooksPage = () => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+const loadBooks = async (page = bookPage, size = bookSize) => {
+  try {
+    let url = `http://localhost:8080/api/books?page=${page}&size=${size}`;
 
+    if (!selectedCategories.includes('all')) {
+      url += `&genre=${selectedCategories[0]}`;
+    }
+
+    if (!selectedAuthors.includes('all')) {
+      url += `&author=${selectedAuthors[0]}`;
+    }
+
+    if (!selectedPublishers.includes('all')) {
+      url += `&publisher=${selectedPublishers[0]}`;
+    }
+
+    if (searchTerm) {
+      url += `&title=${searchTerm}`;
+    }
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    setBooks(data.content);
+    setFilteredBooks(data.content);
+    setBookTotalPages(data.totalPages);
+  } catch (err) {
+    console.error(err);
+  }
+};
   // Initialize Sample Data
-  useEffect(() => {
-    const sampleBooks = [
-      {
-        id: 1,
-        title: "The Great Gatsby",
-        author: "F. Scott Fitzgerald",
-        isbn: "978-0-7432-7356-5",
-        publisher: "Scribner",
-        year: 1925,
-        pages: 180,
-        category: "fiction",
-        genre: "Classic Literature",
-        copies: 5,
-        available: 3,
-        description: "A classic American novel set in the Jazz Age.",
-        cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400",
-        rating: 4.5,
-      },
-      {
-        id: 2,
-        title: "Sapiens",
-        author: "Yuval Noah Harari",
-        isbn: "978-0-06-231609-7",
-        publisher: "Harper",
-        year: 2011,
-        pages: 443,
-        category: "non-fiction",
-        genre: "History",
-        copies: 8,
-        available: 6,
-        description: "A brief history of humankind.",
-        cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400",
-        rating: 4.8,
-      },
-      {
-        id: 3,
-        title: "A Brief History of Time",
-        author: "Stephen Hawking",
-        isbn: "978-0-553-10953-5",
-        publisher: "Bantam",
-        year: 1988,
-        pages: 256,
-        category: "science",
-        genre: "Cosmology",
-        copies: 4,
-        available: 2,
-        description: "An exploration of cosmology and the nature of time.",
-        cover: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400",
-        rating: 4.6,
-      },
-      {
-        id: 4,
-        title: "Clean Code",
-        author: "Robert C. Martin",
-        isbn: "978-0-13-235088-4",
-        publisher: "Prentice Hall",
-        year: 2008,
-        pages: 464,
-        category: "technology",
-        genre: "Programming",
-        copies: 10,
-        available: 8,
-        description: "A handbook of agile software craftsmanship.",
-        cover: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400",
-        rating: 4.7,
-      },
-      {
-        id: 5,
-        title: "1984",
-        author: "George Orwell",
-        isbn: "978-0-452-28423-4",
-        publisher: "Signet Classic",
-        year: 1949,
-        pages: 328,
-        category: "fiction",
-        genre: "Dystopian",
-        copies: 6,
-        available: 0,
-        description: "A dystopian social science fiction novel.",
-        cover: "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=400",
-        rating: 4.9,
-      },
-    ];
-
-    const sampleMembers = [
-      {
-        id: 1,
-        name: "John Doe",
-        email: "john.doe@example.com",
-        phone: "+1 (555) 123-4567",
-        address: "123 Main St, City, State 12345",
-        membershipType: "premium",
-        membershipFee: 99.99,
-        joinDate: "2023-01-15",
-        expiryDate: "2024-01-15",
-        status: "active",
-        borrowedBooks: 2,
-        overdueBooks: 0,
-        totalPenalties: 0,
-      },
-      {
-        id: 2,
-        name: "Jane Smith",
-        email: "jane.smith@example.com",
-        phone: "+1 (555) 234-5678",
-        address: "456 Oak Ave, City, State 12346",
-        membershipType: "standard",
-        membershipFee: 49.99,
-        joinDate: "2023-03-20",
-        expiryDate: "2024-03-20",
-        status: "active",
-        borrowedBooks: 1,
-        overdueBooks: 1,
-        totalPenalties: 15.50,
-      },
-      {
-        id: 3,
-        name: "Mike Johnson",
-        email: "mike.j@example.com",
-        phone: "+1 (555) 345-6789",
-        address: "789 Pine Rd, City, State 12347",
-        membershipType: "basic",
-        membershipFee: 24.99,
-        joinDate: "2023-06-10",
-        expiryDate: "2024-06-10",
-        status: "expired",
-        borrowedBooks: 0,
-        overdueBooks: 0,
-        totalPenalties: 0,
-      },
-    ];
-
-    const sampleBorrowRecords = [
-      {
-        id: 1,
-        bookId: 1,
-        bookTitle: "The Great Gatsby",
-        memberId: 1,
-        memberName: "John Doe",
-        borrowDate: "2024-01-15",
-        dueDate: "2024-02-15",
-        returnDate: null,
-        status: "borrowed",
-        daysOverdue: 0,
-        penalty: 0,
-      },
-      {
-        id: 2,
-        bookId: 2,
-        bookTitle: "Sapiens",
-        memberId: 2,
-        memberName: "Jane Smith",
-        borrowDate: "2023-12-20",
-        dueDate: "2024-01-20",
-        returnDate: null,
-        status: "overdue",
-        daysOverdue: 15,
-        penalty: 15.50,
-      },
-      {
-        id: 3,
-        bookId: 3,
-        bookTitle: "A Brief History of Time",
-        memberId: 1,
-        memberName: "John Doe",
-        borrowDate: "2024-01-10",
-        dueDate: "2024-02-10",
-        returnDate: "2024-02-05",
-        status: "returned",
-        daysOverdue: 0,
-        penalty: 0,
-      },
-    ];
-
-    setBooks(sampleBooks);
-    setFilteredBooks(sampleBooks);
-    setMembers(sampleMembers);
-    setFilteredMembers(sampleMembers);
-    setBorrowRecords(sampleBorrowRecords);
-    setFilteredBorrowRecords(sampleBorrowRecords);
-  }, []);
+ useEffect(() => {
+  loadBooks();
+  loadIssues();
+}, []);
 
   // Get unique publishers and authors
   const publishers = ['all', ...new Set(books.map(b => b.publisher))];
   const authors = ['all', ...new Set(books.map(b => b.author))];
 
   // Filtering Logic for Books
-  useEffect(() => {
-    let result = [...books];
+useEffect(() => {
+  loadBooks(bookPage, bookSize);
+}, [bookPage, bookSize, selectedCategories, selectedAuthors, selectedPublishers, searchTerm]);
 
-    if (searchTerm) {
-      result = result.filter(book =>
-        book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.isbn.includes(searchTerm) ||
-        book.publisher.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+const loadMembers = async (page = 0, size = 10) => {
+  try {
+    const res = await fetch(
+      `http://localhost:8080/api/members?page=${page}&size=${size}`
+    );
 
-    if (!selectedCategories.includes('all')) {
-      result = result.filter(book => selectedCategories.includes(book.category));
-    }
+    const data = await res.json();
 
-    if (!selectedPublishers.includes('all')) {
-      result = result.filter(book => selectedPublishers.includes(book.publisher));
-    }
-
-    if (!selectedAuthors.includes('all')) {
-      result = result.filter(book => selectedAuthors.includes(book.author));
-    }
-
-    if (availability === 'available') {
-      result = result.filter(book => book.available > 0);
-    } else if (availability === 'borrowed') {
-      result = result.filter(book => book.available === 0);
-    }
-
-    if (minRating > 0) {
-      result = result.filter(book => book.rating >= minRating);
-    }
-
-    if (yearRange.from) {
-      result = result.filter(book => book.year >= parseInt(yearRange.from));
-    }
-    if (yearRange.to) {
-      result = result.filter(book => book.year <= parseInt(yearRange.to));
-    }
-
-    result.sort((a, b) => {
-      switch (sortBy) {
-        case 'title-asc': return a.title.localeCompare(b.title);
-        case 'title-desc': return b.title.localeCompare(a.title);
-        case 'author-asc': return a.author.localeCompare(b.author);
-        case 'author-desc': return b.author.localeCompare(a.author);
-        case 'year-desc': return b.year - a.year;
-        case 'year-asc': return a.year - b.year;
-        case 'rating-desc': return b.rating - a.rating;
-        case 'rating-asc': return a.rating - b.rating;
-        default: return 0;
-      }
-    });
-
-    setFilteredBooks(result);
-    setCurrentPage(1);
-  }, [searchTerm, selectedCategories, selectedPublishers, selectedAuthors, availability, minRating, yearRange, sortBy, books]);
-
+    setMembers(data.content);
+    setFilteredMembers(data.content);
+  } catch (err) {
+    console.error(err);
+  }
+};
   // Filtering Logic for Members
   useEffect(() => {
     let result = [...members];
@@ -573,7 +387,11 @@ const BooksPage = () => {
     setCurrentBook(null);
     setIsBookModalOpen(true);
   };
-
+const fetchBookById = async (id) => {
+  const res = await fetch(`http://localhost:8080/api/books/${id}`);
+  const data = await res.json();
+  setSelectedBook(data);
+};
   const handleEditBook = (book) => {
     if (userRole === 'user') {
       showToast('Only admins and librarians can edit books', 'error');
@@ -583,51 +401,70 @@ const BooksPage = () => {
     setCurrentBook(book);
     setIsBookModalOpen(true);
   };
+const handleDeleteBook = (book) => {
+  if (userRole === 'user') {
+    showToast('Only admins and librarians can delete books', 'error');
+    return;
+  }
 
-  const handleDeleteBook = (book) => {
-    if (userRole === 'user') {
-      showToast('Only admins and librarians can delete books', 'error');
-      return;
-    }
-    setSelectedBook(book);
-    setConfirmAction(() => () => {
-      setBooks(books.filter(b => b.id !== book.id));
+  setSelectedBook(book);
+
+  setConfirmAction(() => async () => {
+    try {
+      await fetch(`http://localhost:8080/api/books/${book.id}`, {
+        method: "DELETE"
+      });
+
       showToast('Book deleted successfully', 'success');
-      setIsConfirmModalOpen(false);
-    });
-    setIsConfirmModalOpen(true);
-  };
-
-  const handleSubmitBook = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const bookData = {
-      id: currentBook?.id || Date.now(),
-      title: formData.get('title'),
-      author: formData.get('author'),
-      isbn: formData.get('isbn'),
-      publisher: formData.get('publisher'),
-      year: parseInt(formData.get('year')),
-      pages: parseInt(formData.get('pages')),
-      category: formData.get('category'),
-      genre: formData.get('genre'),
-      copies: parseInt(formData.get('copies')),
-      available: currentBook ? currentBook.available : parseInt(formData.get('copies')),
-      description: formData.get('description'),
-      cover: formData.get('cover') || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400',
-      rating: parseFloat(formData.get('rating')) || 0,
-    };
-
-    if (isEditMode) {
-      setBooks(books.map(b => b.id === bookData.id ? bookData : b));
-      showToast('Book updated successfully', 'success');
-    } else {
-      setBooks([...books, bookData]);
-      showToast('Book added successfully', 'success');
+      loadBooks(); // refresh list
+    } catch (error) {
+      console.error(error);
+      showToast('Failed to delete book', 'error');
     }
-    setIsBookModalOpen(false);
+
+    setIsConfirmModalOpen(false);
+  });
+
+  setIsConfirmModalOpen(true);
+};
+  const handleSubmitBook = async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+
+  const bookData = {
+    title: formData.get("title"),
+    series: null,
+    description: formData.get("description"),
+    pages: parseInt(formData.get("pages")),
+    publicationDate: formData.get("publicationDate"),
+    language: formData.get("language"),
+    rating: parseFloat(formData.get("rating")),
+    ratings: 0,
+    imageURL: formData.get("imageURL"),
+    genre: formData.get("genre"),
+    author: formData.get("author"),
+    publisher: formData.get("publisher"),
+    availability: parseInt(formData.get("availability")),
+    mrp: parseFloat(formData.get("mrp"))
   };
 
+  if (isEditMode) {
+    await fetch(`http://localhost:8080/api/books/${currentBook.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bookData)
+    });
+  } else {
+    await fetch("http://localhost:8080/api/books", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bookData)
+    });
+  }
+
+  loadBooks();
+  setIsBookModalOpen(false);
+};
   // Member CRUD Operations
   const handleAddMember = () => {
     if (userRole === 'user') {
@@ -649,20 +486,31 @@ const BooksPage = () => {
     setIsMemberModalOpen(true);
   };
 
-  const handleDeleteMember = (member) => {
-    if (userRole === 'user') {
-      showToast('Only admins and librarians can delete members', 'error');
-      return;
-    }
-    setSelectedMember(member);
-    setConfirmAction(() => () => {
-      setMembers(members.filter(m => m.id !== member.id));
-      showToast('Member deleted successfully', 'success');
-      setIsConfirmModalOpen(false);
-    });
-    setIsConfirmModalOpen(true);
-  };
+ const handleDeleteMember = (member) => {
+  if (userRole === 'user') {
+    showToast('Only admins and librarians can delete members', 'error');
+    return;
+  }
 
+  setSelectedMember(member);
+
+  setConfirmAction(() => async () => {
+    await fetch(`http://localhost:8080/api/members/${member.id}`, {
+      method: "DELETE"
+    });
+
+    loadMembers();
+    showToast('Member deleted successfully', 'success');
+    setIsConfirmModalOpen(false);
+  });
+
+  setIsConfirmModalOpen(true);
+};
+useEffect(() => {
+  if (activeTab === 'members') {
+    loadMembers();
+  }
+}, [activeTab]);
   const handleSubmitMember = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -694,71 +542,66 @@ const BooksPage = () => {
 
   // Borrowing Operations
   const handleBorrowBook = (book) => {
-    if (book.available === 0) {
+    if (book.availability === 0) {
       showToast('No copies available for borrowing', 'error');
       return;
     }
     setSelectedBook(book);
     setIsBorrowModalOpen(true);
   };
+const loadIssues = async () => {
+  try {
+    const res = await fetch("http://localhost:8080/api/issues");
+    const data = await res.json();
+    setBorrowRecords(data);
+    setFilteredBorrowRecords(data);
+  } catch (err) {
+    console.error(err);
+  }
+};
+const loadMemberHistory = async (userId) => {
+  const res = await fetch(
+    `http://localhost:8080/api/members/${userId}/history`
+  );
+  const data = await res.json();
+  setBorrowRecords(data);
+};
+const handleSubmitBorrow = async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
 
-  const handleSubmitBorrow = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const borrowData = {
-      id: Date.now(),
-      bookId: selectedBook.id,
-      bookTitle: selectedBook.title,
-      memberId: parseInt(formData.get('memberId')),
-      memberName: members.find(m => m.id === parseInt(formData.get('memberId')))?.name || 'Unknown',
-      borrowDate: formData.get('borrowDate'),
-      dueDate: formData.get('dueDate'),
-      returnDate: null,
-      status: 'borrowed',
-      daysOverdue: 0,
-      penalty: 0,
-    };
+  try {
+    await fetch("http://localhost:8080/api/issues", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        bookId: selectedBook.id,
+        username: formData.get("username")
+      })
+    });
 
-    setBooks(books.map(b => 
-      b.id === selectedBook.id ? { ...b, available: b.available - 1 } : b
-    ));
-    setBorrowRecords([...borrowRecords, borrowData]);
-    showToast('Book borrowed successfully', 'success');
+    showToast("Book issued successfully");
+    loadBooks();
+    loadIssues();
     setIsBorrowModalOpen(false);
-  };
+  } catch (err) {
+    console.error(err);
+    showToast("Issue failed", "error");
+  }
+};
+ const handleReturnBook = async (issueId) => {
+  await fetch("http://localhost:8080/api/returns", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+  issueId,
+  status: "RETURNED"
+})
+  });
 
-  const handleReturnBook = (record) => {
-    if (userRole === 'user') {
-      showToast('Only admins and librarians can process returns', 'error');
-      return;
-    }
-    
-    const today = new Date();
-    const dueDate = new Date(record.dueDate);
-    const daysOverdue = Math.max(0, Math.floor((today - dueDate) / (1000 * 60 * 60 * 24)));
-    const penalty = daysOverdue * 1.0; // $1 per day penalty
-
-    setBorrowRecords(borrowRecords.map(r =>
-      r.id === record.id
-        ? { ...r, returnDate: today.toISOString().split('T')[0], status: 'returned', daysOverdue, penalty }
-        : r
-    ));
-
-    setBooks(books.map(b =>
-      b.id === record.bookId ? { ...b, available: b.available + 1 } : b
-    ));
-
-    if (penalty > 0) {
-      setMembers(members.map(m =>
-        m.id === record.memberId
-          ? { ...m, totalPenalties: m.totalPenalties + penalty, overdueBooks: Math.max(0, m.overdueBooks - 1) }
-          : m
-      ));
-      showToast(`Book returned with $${penalty.toFixed(2)} penalty`, 'info');
-    } else {
-      showToast('Book returned successfully', 'success');
-    }
-  };
+  loadBooks();
+  loadIssues();
+};
 
   const handleViewDetails = (book) => {
     setSelectedBook(book);
@@ -794,7 +637,7 @@ const BooksPage = () => {
   const BookCard = ({ book }) => (
     <div className={`book-card ${viewMode}`}>
       <div className="book-cover">
-        <img src={book.cover} alt={book.title} />
+        <img src={book.imageURL} alt={book.title} />
         <div className="book-overlay">
           <button className="btn-icon" onClick={() => handleViewDetails(book)} title="View Details">
             <Icons.Eye size={20} />
@@ -810,16 +653,18 @@ const BooksPage = () => {
             </>
           )}
         </div>
-        <div className={`availability-badge ${book.available > 0 ? 'available' : 'borrowed'}`}>
-          {book.available > 0 ? `${book.available} Available` : 'Not Available'}
-        </div>
+        <div className={`availability-badge ${book.availability > 0 ? 'available' : 'borrowed'}`}>
+  {book.availability > 0 ? `${book.availability} Available` : 'Not Available'}
+</div>
       </div>
       <div className="book-info">
         <h3 className="book-title">{book.title}</h3>
         <p className="book-author">{book.author}</p>
         <p className="book-publisher">{book.publisher}</p>
         <div className="book-meta">
-          <span className="book-year">{book.year}</span>
+          <span className="book-year">
+  {new Date(book.publicationDate).getFullYear()}
+</span>
           <span className="book-category">{book.category}</span>
           <span className="book-genre">{book.genre}</span>
         </div>
@@ -828,7 +673,7 @@ const BooksPage = () => {
           <span>{book.rating}</span>
         </div>
         <div className="book-actions">
-          {book.available > 0 ? (
+          {book.availability > 0 ? (
             <button className="btn-primary-small" onClick={() => handleBorrowBook(book)}>
               Borrow Book
             </button>
@@ -919,8 +764,8 @@ const BooksPage = () => {
   const BorrowRecordRow = ({ record }) => (
     <tr className={`record-row status-${record.status}`}>
       <td>{record.bookTitle}</td>
-      <td>{record.memberName}</td>
-      <td>{record.borrowDate}</td>
+      <td>{record.username}</td>
+      <td>{record.issueDate}</td>
       <td>{record.dueDate}</td>
       <td>{record.returnDate || '-'}</td>
       <td>
@@ -943,10 +788,10 @@ const BooksPage = () => {
         )}
       </td>
       <td>
-        {record.status === 'borrowed' && (userRole === 'admin' || userRole === 'librarian') && (
+        {record.status === 'ISSUED' && (userRole === 'admin' || userRole === 'librarian') && (
           <button
             className="btn-return"
-            onClick={() => handleReturnBook(record)}
+           onClick={() => handleReturnBook(record.issueId)}
           >
             Return
           </button>
@@ -1256,7 +1101,7 @@ const BooksPage = () => {
           {/* Content Area */}
           {activeTab === 'books' && (
             <div className={`books-grid ${viewMode}`}>
-              {currentItems.map(book => (
+              {filteredBooks.map(book => (
                 <BookCard key={book.id} book={book} />
               ))}
             </div>
@@ -1288,7 +1133,7 @@ const BooksPage = () => {
                 </thead>
                 <tbody>
                   {currentItems.map(record => (
-                    <BorrowRecordRow key={record.id} record={record} />
+                    <BorrowRecordRow key={record.issueId} record={record} />
                   ))}
                 </tbody>
               </table>
@@ -1296,37 +1141,43 @@ const BooksPage = () => {
           )}
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="pagination">
-              <button 
-                className="btn-page" 
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-              >
-                <Icons.ChevronLeft size={16} />
-                Previous
-              </button>
-              <div className="page-numbers">
-                {[...Array(totalPages)].map((_, i) => (
-                  <button
-                    key={i}
-                    className={`page-number ${currentPage === i + 1 ? 'active' : ''}`}
-                    onClick={() => setCurrentPage(i + 1)}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-              </div>
-              <button 
-                className="btn-page" 
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-                <Icons.ChevronRight size={16} />
-              </button>
-            </div>
-          )}
+          {activeTab === 'books' && bookTotalPages > 1 && (
+  <div className="pagination">
+    <button
+      className="btn-page"
+      disabled={bookPage === 0}
+      onClick={() => setBookPage(prev => prev - 1)}
+    >
+      <Icons.ChevronLeft size={16} />
+      Previous
+    </button>
+
+    <span className="page-info">
+      Page {bookPage + 1} of {bookTotalPages}
+    </span>
+
+    <button
+      className="btn-page"
+      disabled={bookPage + 1 >= bookTotalPages}
+      onClick={() => setBookPage(prev => prev + 1)}
+    >
+      Next
+      <Icons.ChevronRight size={16} />
+    </button>
+
+    <select
+      value={bookSize}
+      onChange={(e) => {
+        setBookSize(parseInt(e.target.value));
+        setBookPage(0);
+      }}
+    >
+      <option value={10}>10</option>
+      <option value={20}>20</option>
+      <option value={50}>50</option>
+    </select>
+  </div>
+)}
         </main>
       </div>
 

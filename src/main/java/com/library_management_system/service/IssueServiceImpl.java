@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.library_management_system.dto.IssueRequestDTO;
@@ -64,19 +63,49 @@ public class IssueServiceImpl implements IssueService {
     }
 
     @Override
-    public List<IssueResponseDTO> getCurrentIssued() {
-        return issueRepo.findByStatus(IssueStatus.ISSUED)
-                .stream().map(this::mapToDTO).toList();
-    }
+public List<IssueResponseDTO> getCurrentIssued() {
 
-    @Override
-    public List<IssueResponseDTO> getHistory(Long userId) {
-        return issueRepo.findByUserId(userId)
-                .stream().map(this::mapToDTO).toList();
-    }
+    return issueRepo.findByStatus(IssueStatus.ISSUED)
+            .stream()
+            .map(issue -> {
+                issue.setPenalty(computeLivePenalty(issue));
+                return mapToDTO(issue);
+            })
+            .toList();
+}
+   @Override
+public List<IssueResponseDTO> getHistory(Long userId) {
+
+    return issueRepo.findByUserId(userId)
+            .stream()
+            .map(issue -> {
+                issue.setPenalty(computeLivePenalty(issue));
+                return mapToDTO(issue);
+            })
+            .toList();
+}
 
     // ================= PRIVATE METHODS =================
+private double computeLivePenalty(Issue issue) {
 
+    if (issue.getStatus() != IssueStatus.ISSUED)
+        return issue.getPenalty();
+
+    if (LocalDate.now().isAfter(issue.getDueDate())) {
+
+        long overdueDays =
+                ChronoUnit.DAYS.between(
+                        issue.getDueDate(),
+                        LocalDate.now());
+
+        return overdueDays *
+                issue.getUser()
+                        .getMembership()
+                        .getLateFeePerDay();
+    }
+
+    return 0;
+}
     private User getUserByUsername(String username) {
         return userRepo.findByUsername(username)
                 .orElseThrow(() ->

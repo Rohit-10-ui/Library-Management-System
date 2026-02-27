@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.library_management_system.dto.AssignMembershipDTO;
 import com.library_management_system.entity.Membership;
 import com.library_management_system.entity.User;
 import com.library_management_system.service.MembershipService;
@@ -13,7 +14,7 @@ import com.library_management_system.service.MembershipService;
 import org.springframework.data.domain.Page;
 
 import lombok.RequiredArgsConstructor;
-
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/memberships")
 @RequiredArgsConstructor
@@ -64,6 +65,13 @@ public ResponseEntity<Page<User>> getMembersByMembership(
 
     Page<User> users = service.getMembersByMembership(id, page, size);
     return ResponseEntity.ok(users);
+}
+@PostMapping("/assign")
+public ResponseEntity<String> assignMembership(
+        @RequestBody AssignMembershipDTO dto) {
+
+    service.assignMembership(dto);
+    return ResponseEntity.ok("Membership assigned successfully");
 }
 }
 
