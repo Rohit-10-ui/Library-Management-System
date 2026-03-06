@@ -62,39 +62,51 @@ const Login = () => {
     return e;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  const errs = validate();
+  if (Object.keys(errs).length) {
+    setErrors(errs);
+    return;
+  }
 
+  try {
     setLoading(true);
-    // TODO: replace with real API call
-    fetch("http://localhost:8080/api/login", {
+
+    const response = await fetch("http://localhost:8080/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role: "USER", ...formData }),
-    })
-      .then(response => {
-        if (!response.ok) throw new Error("Login failed");
-        return response.json();
-      })
-      .then(data => {
-        console.log("Login Success:", data);
-        if (data.token) localStorage.setItem("token", data.token);
-        window.location.href = "/dashboard";
-      })
-      .catch(error => {
-        console.error("Error:", error);
-        setLoading(false);
-        alert("Login failed. Please check your credentials.");
-      });
-      
-    setTimeout(() => {
-      setLoading(false);
-      console.log("Login Payload:", { role: "USER", ...formData });
-      alert("Login submitted! Connect to your Spring Boot API.");
-    }, 1500);
-  };
+      body: JSON.stringify(formData),
+    });
+
+    if (!response.ok) throw new Error("Login failed");
+
+    const data = await response.json();
+
+    // Save token
+    localStorage.setItem("token", data.token);
+
+    // Save role
+    localStorage.setItem("role", data.role);
+
+    // Save username (optional)
+    localStorage.setItem("username", data.username);
+
+    // Redirect based on role
+    if (data.role === "ADMIN") {
+      window.location.href = "/admindashboard";
+    } else if (data.role === "LIBRARIAN") {
+      window.location.href = "/librarian";
+    } else {
+      window.location.href = "/memberships";
+    }
+
+  } catch (error) {
+    alert("Invalid credentials");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="login-page">
@@ -121,7 +133,7 @@ const Login = () => {
           </div>
 
           {/* Floating book illustrations */}
-          <div className="login-panel__illustration">
+          {/* <div className="login-panel__illustration">
             <div className="login-panel__glow" />
             <div className="float-book float-book--1 book--orange">
               <div className="book-spine" /><div className="book-cover" />
@@ -132,7 +144,7 @@ const Login = () => {
             <div className="float-book float-book--3 book--blue">
               <div className="book-spine" /><div className="book-cover" />
             </div>
-          </div>
+          </div> */}
 
           <h2 className="login-panel__title">Welcome Back,<br />Reader</h2>
           <p className="login-panel__subtitle">

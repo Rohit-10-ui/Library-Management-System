@@ -3,6 +3,7 @@ package com.library_management_system.service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.library_management_system.dto.LoginResponse;
 import com.library_management_system.entity.ApprovalStatus;
 import com.library_management_system.entity.User;
 import com.library_management_system.repository.UserRepository;
@@ -18,11 +19,10 @@ public class LoginServiceImpl implements LoginService {
     private final JwtService jwtService;
 
     @Override
-    public String login(String username, String password) {
-System.out.println("LOGIN SERVICE HIT");
+    public LoginResponse login(String username, String password) {
 
         User user = repo.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Invalid credentials- no user with this name"));
+                .orElseThrow(() -> new RuntimeException("Invalid credentials - no user with this name"));
 
         if (!encoder.matches(password, user.getPassword()))
             throw new RuntimeException("Invalid credentials - password not matched");
@@ -30,11 +30,14 @@ System.out.println("LOGIN SERVICE HIT");
         if (user.getStatus() != ApprovalStatus.APPROVED)
             throw new RuntimeException("Account not approved");
 
-       
-        return jwtService.generateToken(
-        user.getUsername(),
-        user.getRole().name()
-);
+        String token = jwtService.generateToken(user.getUsername(), user.getRole().name());
 
+        return new LoginResponse(
+                user.getUsername(),
+                token,
+                user.getRole().name(),
+                user.getId()
+        );
     }
 }
+

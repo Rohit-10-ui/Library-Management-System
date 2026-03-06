@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.library_management_system.dto.AcademicInfoDTO;
 import com.library_management_system.dto.AddressDTO;
 import com.library_management_system.dto.LoginRequest;
+import com.library_management_system.dto.LoginResponse;
 import com.library_management_system.dto.PersonalDetails;
 import com.library_management_system.dto.WorkExperienceDTO;
 import com.library_management_system.service.LoginService;
@@ -60,13 +63,15 @@ public class AuthController {
 
         return ResponseEntity.ok("Request sent to admin");
     }
+@CrossOrigin(origins = "http://localhost:3000")
+@PostMapping("/login")
+public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
 
-    @CrossOrigin(origins = "http://localhost:3000")
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    LoginResponse response = loginService.login(
+            request.getUsername(),
+            request.getPassword()
+    );
 
-        String token = loginService.login(request.getUsername(), request.getPassword());
-        System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@LOGIN CONTROLLERR@@@@@@@@@@");
-        return ResponseEntity.ok(Map.of("token", token));
-    }
+    return ResponseEntity.ok(response);
+}
 }

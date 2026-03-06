@@ -9,6 +9,7 @@ import java.util.List;
 public interface IssueRepository extends JpaRepository<Issue, Long> {
 
     List<Issue> findByUserId(Long userId);
+    //List<Issue> findByUserUsername(String username);
 
     List<Issue> findByStatus(IssueStatus status);
 

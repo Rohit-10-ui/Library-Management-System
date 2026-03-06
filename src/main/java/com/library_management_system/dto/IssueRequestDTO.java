@@ -12,4 +12,4 @@ public class IssueRequestDTO {
 
     @NotBlank(message = "{username.required}")
     private String username;   // user for whom book is issued
-}
+} 

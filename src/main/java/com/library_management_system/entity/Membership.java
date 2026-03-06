@@ -2,6 +2,8 @@ package com.library_management_system.entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,5 +28,6 @@ public class Membership {
     private Boolean active;
 
     @OneToMany(mappedBy = "membership")
+    @JsonIgnore
     private List<User> users;
 }

@@ -30,19 +30,23 @@ public class IssueServiceImpl implements IssueService {
     private final IssueRepository issueRepo;
     private final BookRepository bookRepo;
     private final UserRepository userRepo;
+    private final EmailService emailservice;
 
     @Override
     public IssueResponseDTO issueBook(IssueRequestDTO dto) {
 
         User user = getUserByUsername(dto.getUsername());
         Book book = getBook(dto.getBookId());
-
+        String bookname = book.getTitle();
         validateBorrowLimit(user);
         validateAvailability(book);
-
+     
         Issue issue = buildIssue(user, book);
         updateAvailability(book, -1);
-
+emailservice.sendEmail(
+            dto.getUsername(),
+            "Book issue | LibraryHub Support",
+            "You have  been issued the book : "+bookname + "\n user name: "+ user.getFirstName()+ " "+user.getLastName()+ "\n return date: "+ issue.getDueDate()+ "\n\n Not returning books on time will result in fine \n If book is damaged or lost full MRP is to be paid as a fine   ");
         log.info("Book issued to {} : {}", user.getUsername(), book.getTitle());
         return mapToDTO(issueRepo.save(issue));
     }
@@ -74,9 +78,10 @@ public List<IssueResponseDTO> getCurrentIssued() {
             .toList();
 }
    @Override
-public List<IssueResponseDTO> getHistory(Long userId) {
-
-    return issueRepo.findByUserId(userId)
+public List<IssueResponseDTO> getHistory(String username) {
+    User user = getUserByUsername(username);
+    
+    return issueRepo.findByUserId(user.getId())
             .stream()
             .map(issue -> {
                 issue.setPenalty(computeLivePenalty(issue));

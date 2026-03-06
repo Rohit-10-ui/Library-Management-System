@@ -7,6 +7,8 @@ import AdminDashboard from "./Components/Admindashboard";
 import UserDashboard from "./Components/UserDashboard";
 import ForgotPassword from "./Components/Forgotpassword";
 import BooksPage from "./Components/BooksPage";
+import LibrarianDashboard from "./Components/LibrarianDashboard";
+import MembershipsPage from "./Components/MembershipsPage";
 
 function App() {
   return (
@@ -19,6 +21,11 @@ function App() {
         <Route path="/userdashboard" element={<UserDashboard />} />
         <Route path='/forgotpassword' element={<ForgotPassword />} />
         <Route path="/books" element={<BooksPage />} />
+        <Route path="/librarian" element={<LibrarianDashboard/>}/>
+        <Route 
+          path="/memberships" 
+          element={<MembershipsPage  />} 
+        />
       </Routes>
     </BrowserRouter>
   );

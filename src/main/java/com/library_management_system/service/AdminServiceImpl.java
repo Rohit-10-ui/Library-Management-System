@@ -45,6 +45,21 @@ public class AdminServiceImpl implements AdminService {
 }).toList();
 
 }
+@Override
+    public List<PersonalDetails> fetchAllUsers() {
+
+    List<User> users = repo.findAll();
+
+    return users.stream().map(user -> {
+    PersonalDetails dto = new PersonalDetails();
+    dto.setUsername(user.getUsername());
+    dto.setEmail(user.getEmail());
+    dto.setFirstName(user.getFirstName());
+    dto.setLastName(user.getLastName());
+    return dto;
+}).toList();
+
+}
 
 
     @Override

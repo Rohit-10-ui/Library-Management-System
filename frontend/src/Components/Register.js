@@ -309,19 +309,6 @@ const Register = () => {
             <span className="register-panel__logo-text">LibraryHub</span>
           </div>
 
-          <div className="register-panel__illustration">
-            <div className="register-panel__glow" />
-            <div className="float-book float-book--1 book--orange">
-              <div className="book-spine" /><div className="book-cover" />
-            </div>
-            <div className="float-book float-book--2 book--green">
-              <div className="book-spine" /><div className="book-cover" />
-            </div>
-            <div className="float-book float-book--3 book--blue">
-              <div className="book-spine" /><div className="book-cover" />
-            </div>
-          </div>
-
           <h2 className="register-panel__title">Join LibraryHub</h2>
           <p className="register-panel__subtitle">
             Create your account and start exploring a world of knowledge at your fingertips.
@@ -360,9 +347,9 @@ const Register = () => {
 
           {/* Header */}
           <div className="register-card__header">
-            <div className="register-card__icon-wrap"><BookIcon size={26} /></div>
+            {/* <div className="register-card__icon-wrap"><BookIcon size={26} /></div> */}
             <h1 className="register-card__title">Create Account</h1>
-            <p className="register-card__subtitle">Step {step + 1} of {steps.length} — {steps[step]}</p>
+            {/* <p className="register-card__subtitle">Step {step + 1} of {steps.length} — {steps[step]}</p> */}
           </div>
 
           {/* Role toggle */}
@@ -411,9 +398,9 @@ const Register = () => {
           ════════════════════════════ */}
           {step === 0 && (
             <form onSubmit={handleNext} noValidate>
-              <h3 className="register-step-heading">
+              {/* <h3 className="register-step-heading">
                 <UserIcon size={20} color="#FF9B7A" /> Personal Details
-              </h3>
+              </h3> */}
 
               <div className="register-grid-2">
                 <Field label="First Name" error={errors.firstName}>
@@ -502,9 +489,9 @@ const Register = () => {
           ════════════════════════════ */}
           {step === 1 && (
             <form onSubmit={handleNext} noValidate>
-              <h3 className="register-step-heading">
+              {/* <h3 className="register-step-heading">
                 <MapPinIcon size={20} color="#FF9B7A" /> Address Details
-              </h3>
+              </h3> */}
 
               <Field label="Street / Area" icon={MapPinIcon} error={errors.street}>
                 <input
@@ -552,9 +539,9 @@ const Register = () => {
           ════════════════════════════ */}
           {step === 2 && role === "USER" && (
             <form onSubmit={handleNext} noValidate>
-              <h3 className="register-step-heading">
+              {/* <h3 className="register-step-heading">
                 <GraduationIcon size={20} color="#FF9B7A" /> Academic Information
-              </h3>
+              </h3> */}
 
               {formData.academicInfoList.map((ac, i) => (
                 <div key={i} className="register-dynamic-block">
@@ -626,9 +613,9 @@ const Register = () => {
           ════════════════════════════ */}
           {step === 3 && role === "USER" && (
             <form onSubmit={handleNext} noValidate>
-              <h3 className="register-step-heading">
+              {/* <h3 className="register-step-heading">
                 <BriefcaseIcon size={20} color="#FF9B7A" /> Work Experience
-              </h3>
+              </h3> */}
 
               {formData.workExperienceList.map((wk, i) => (
                 <div key={i} className="register-dynamic-block">
@@ -717,9 +704,9 @@ const Register = () => {
           ════════════════════════════ */}
           {step === 2 && role === "LIBRARIAN" && (
             <form onSubmit={handleNext} noValidate>
-              <h3 className="register-step-heading">
+              {/* <h3 className="register-step-heading">
                 <BriefcaseIcon size={20} color="#FF9B7A" /> Librarian Details
-              </h3>
+              </h3> */}
 
               <Field label="Employee ID" icon={BriefcaseIcon}>
                 <input

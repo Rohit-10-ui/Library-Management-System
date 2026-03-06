@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./UserDashboard.css";
 
 /* ══════════════════════════════════════════
@@ -85,6 +86,7 @@ const NAV_ITEMS = [
   { id:"browse",        label:"Browse Books",     iconFn: Icons.books,   section:"MAIN"      },
   { id:"borrowed",      label:"My Books",         iconFn: Icons.book,    section:"MAIN", badge: 3 },
   { id:"history",       label:"Borrow History",   iconFn: Icons.history, section:"MAIN"      },
+  { id:"membership",    label:"Membership",       iconFn: (s,c)=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, section:"LIBRARY" },
   { id:"favorites",     label:"Favorites",        iconFn: Icons.heart,   section:"LIBRARY"   },
   { id:"notifications", label:"Notifications",    iconFn: Icons.bell,    section:"LIBRARY", badge: 3 },
   { id:"profile",       label:"My Profile",       iconFn: Icons.user,    section:"ACCOUNT"   },
@@ -747,6 +749,131 @@ const ProfileSection = ({ user, onUpdateProfile }) => {
   );
 };
 
+/* ── Membership Section ── */
+const MembershipSection = () => {
+  const [membershipTab, setMembershipTab] = useState('myplan');
+  const myMembership = {
+    planName: 'Standard Plan',
+    membershipType: 'STANDARD',
+    joinDate: '2024-01-10',
+    expiryDate: '2025-01-10',
+    status: 'active',
+    borrowLimit: 5,
+    durationDays: 30,
+    fee: 299,
+    lateFeePerDay: 5,
+    borrowedBooks: 2,
+    overdueBooks: 0,
+    totalPenalties: 0,
+  };
+
+  const plans = [
+    {id:1,name:'BASIC',        borrowLimit:2, durationDays:14, fee:199,  lateFeePerDay:3,  active:true},
+    {id:2,name:'STANDARD',     borrowLimit:5, durationDays:30, fee:299,  lateFeePerDay:5,  active:true},
+    {id:3,name:'PREMIUM',      borrowLimit:10,durationDays:60, fee:499,  lateFeePerDay:10, active:true},
+    {id:4,name:'STUDENT_BASIC',borrowLimit:3, durationDays:14, fee:99,   lateFeePerDay:2,  active:true},
+  ];
+
+  const daysLeft = Math.ceil((new Date(myMembership.expiryDate)-new Date())/86400000);
+  const planColors = {BASIC:'#6B9BD1', STANDARD:'#A8C5A8', PREMIUM:'#FF9B7A', STUDENT_BASIC:'#B8D4ED'};
+  const getPlanColor = name => planColors[name?.toUpperCase()] || '#FFD4B8';
+
+  return (
+    <>
+      {/* Tabs */}
+      <div style={{display:'flex',gap:'0.5rem',marginBottom:'1.5rem',borderBottom:'2px solid rgba(255,155,122,0.1)',paddingBottom:'0.5rem'}}>
+        {[{k:'myplan',l:'My Membership'},{k:'plans',l:'All Plans'}].map(t=>(
+          <button key={t.k} onClick={()=>setMembershipTab(t.k)} style={{padding:'0.6rem 1.2rem',background:membershipTab===t.k?'rgba(255,155,122,0.1)':'transparent',border:'none',borderRadius:8,color:membershipTab===t.k?'#FF9B7A':'#8B6F47',fontWeight:membershipTab===t.k?600:400,cursor:'pointer',fontSize:'0.9rem',transition:'all 0.2s'}}>{t.l}</button>
+        ))}
+      </div>
+
+      {membershipTab==='myplan'&&(
+        <div style={{display:'grid',gap:'1.5rem'}}>
+          {/* Current Plan Card */}
+          <div className="ud-card">
+            <div className="ud-card__header">
+              <div className="ud-card__title-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF9B7A" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <div><div className="ud-card__title">Current Membership</div><div className="ud-card__subtitle">{myMembership.planName}</div></div>
+              </div>
+              <span className={`ud-badge ud-badge--${myMembership.status}`} style={{textTransform:'capitalize'}}>{myMembership.status}</span>
+            </div>
+            <div className="ud-card__body">
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'1.5rem',marginBottom:'1.5rem'}}>
+                {[
+                  {l:'Plan Type',v:myMembership.membershipType,i:Icons.trending},
+                  {l:'Borrow Limit',v:`${myMembership.borrowLimit} books`,i:Icons.book},
+                  {l:'Loan Period',v:`${myMembership.durationDays} days`,i:Icons.clock},
+                  {l:'Late Fee',v:`₹${myMembership.lateFeePerDay}/day`,i:Icons.dollar},
+                  {l:'Joined',v:new Date(myMembership.joinDate).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}),i:Icons.user},
+                  {l:'Expires',v:new Date(myMembership.expiryDate).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}),i:Icons.bell},
+                ].map((f,i)=>(
+                  <div key={i} style={{display:'flex',gap:'0.75rem',alignItems:'center',padding:'1rem',background:'rgba(255,248,240,0.5)',borderRadius:10}}>
+                    <div style={{width:36,height:36,borderRadius:8,background:'rgba(255,155,122,0.15)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{f.i(16,'#FF9B7A')}</div>
+                    <div><div style={{fontSize:'0.75rem',color:'#8B6F47',marginBottom:2}}>{f.l}</div><div style={{fontSize:'0.9rem',fontWeight:600,color:'#3D2817'}}>{f.v}</div></div>
+                  </div>
+                ))}
+              </div>
+              {daysLeft!==null&&(
+                <div style={{padding:'1rem',background:daysLeft<30?'rgba(255,152,0,0.08)':'rgba(76,175,80,0.08)',borderRadius:10,border:`1.5px solid ${daysLeft<30?'rgba(255,152,0,0.2)':'rgba(76,175,80,0.2)'}`}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.5rem'}}>
+                    <span style={{fontSize:'0.85rem',fontWeight:600,color:'#3D2817'}}>{daysLeft>0?`${daysLeft} days remaining`:'Membership expired'}</span>
+                    {daysLeft<30&&daysLeft>0&&<span style={{fontSize:'0.75rem',color:'#F57C00',display:'flex',alignItems:'center',gap:'0.3rem'}}>{Icons.bell(12,'#F57C00')}Renew soon</span>}
+                  </div>
+                  <div style={{height:8,background:'rgba(0,0,0,0.05)',borderRadius:4,overflow:'hidden'}}><div style={{height:'100%',background:daysLeft<30?'#FFA000':'#4CAF50',width:`${Math.max(0,Math.min(100,(daysLeft/365)*100))}%`,transition:'width 0.3s'}}/></div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'1rem'}}>
+            {[
+              {l:'Books Borrowed',v:myMembership.borrowedBooks,c:'#FF9B7A',i:Icons.book},
+              {l:'Overdue Books',v:myMembership.overdueBooks,c:'#e05555',i:Icons.bell},
+              {l:'Total Penalties',v:`₹${myMembership.totalPenalties}`,c:'#F39C12',i:Icons.dollar},
+            ].map((s,i)=>(
+              <div key={i} style={{padding:'1.25rem',background:'white',borderRadius:12,border:'1.5px solid rgba(255,155,122,0.1)',display:'flex',alignItems:'center',gap:'1rem'}}>
+                <div style={{width:48,height:48,borderRadius:10,background:`${s.c}15`,display:'flex',alignItems:'center',justifyContent:'center'}}>{s.i(22,s.c)}</div>
+                <div><div style={{fontSize:'1.5rem',fontWeight:700,color:'#3D2817',marginBottom:2}}>{s.v}</div><div style={{fontSize:'0.8rem',color:'#8B6F47'}}>{s.l}</div></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {membershipTab==='plans'&&(
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:'1.5rem'}}>
+          {plans.map(plan=>{
+            const col=getPlanColor(plan.name);
+            const isMyPlan=plan.name===myMembership.membershipType;
+            return(
+              <div key={plan.id} style={{padding:'1.5rem',background:'white',borderRadius:16,border:`2px solid ${isMyPlan?col:'rgba(255,155,122,0.1)'}`,position:'relative',transition:'all 0.3s',boxShadow:isMyPlan?`0 4px 20px ${col}30`:'none'}}>
+                {isMyPlan&&<div style={{position:'absolute',top:12,right:12,padding:'0.3rem 0.7rem',background:col,color:'white',fontSize:'0.7rem',fontWeight:600,borderRadius:6,display:'flex',alignItems:'center',gap:'0.3rem'}}>CURRENT</div>}
+                <div style={{width:56,height:56,borderRadius:12,background:`${col}18`,border:`2px solid ${col}30`,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'1rem'}}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={col} strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <h3 style={{fontSize:'1.2rem',fontWeight:700,color:'#3D2817',marginBottom:'0.3rem'}}>{plan.name.replace(/_/g,' ')}</h3>
+                <div style={{fontSize:'2rem',fontWeight:700,color:col,marginBottom:'1.5rem'}}>₹{plan.fee}<span style={{fontSize:'0.9rem',fontWeight:400,color:'#8B6F47'}}>/plan</span></div>
+                <div style={{display:'flex',flexDirection:'column',gap:'0.75rem',marginBottom:'1.5rem'}}>
+                  {[
+                    {l:`${plan.borrowLimit} books at a time`,i:Icons.book},
+                    {l:`${plan.durationDays} day loan period`,i:Icons.clock},
+                    {l:`₹${plan.lateFeePerDay}/day late fee`,i:Icons.dollar},
+                  ].map((f,i)=>(
+                    <div key={i} style={{display:'flex',alignItems:'center',gap:'0.6rem',fontSize:'0.85rem',color:'#5D4E37'}}>{f.i(14,col)}<span>{f.l}</span></div>
+                  ))}
+                </div>
+                {!isMyPlan&&<button style={{width:'100%',padding:'0.75rem',background:'transparent',border:`2px solid ${col}`,color:col,borderRadius:10,fontWeight:600,cursor:'pointer',fontSize:'0.9rem',transition:'all 0.2s'}} onMouseOver={e=>{e.target.style.background=col;e.target.style.color='white';}} onMouseOut={e=>{e.target.style.background='transparent';e.target.style.color=col;}}>Upgrade to this plan</button>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+};
+
 /* ── Settings Section ── */
 const SettingsSection = ({ onChangePassword }) => (
   <>
@@ -821,6 +948,7 @@ const SettingsSection = ({ onChangePassword }) => (
    MAIN USER DASHBOARD
 ══════════════════════════════════════════ */
 const UserDashboard = () => {
+  const navigate = useNavigate();
   const [activeNav, setActiveNav] = useState("dashboard");
   const [toasts, setToasts]       = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
@@ -837,6 +965,7 @@ const UserDashboard = () => {
     browse:        "Browse Books",
     borrowed:      "My Books",
     history:       "Borrow History",
+    membership:    "Membership",
     favorites:     "My Favorites",
     notifications: "Notifications",
     profile:       "My Profile",
@@ -910,7 +1039,10 @@ const UserDashboard = () => {
                 <button
                   key={item.id}
                   className={`ud-nav__item${activeNav === item.id ? " ud-nav__item--active" : ""}`}
-                  onClick={() => setActiveNav(item.id)}
+                  onClick={() => {
+                    if(item.id === 'browse') navigate('/books');
+                    else setActiveNav(item.id);
+                  }}
                 >
                   <span className="ud-nav__icon">{item.iconFn(18, activeNav===item.id ? "#FF9B7A" : "currentColor")}</span>
                   <span>{item.label}</span>
@@ -986,6 +1118,10 @@ const UserDashboard = () => {
 
           {activeNav === "history" && (
             <HistorySection history={mockHistory} />
+          )}
+
+          {activeNav === "membership" && (
+            <MembershipSection />
           )}
 
           {activeNav === "favorites" && (

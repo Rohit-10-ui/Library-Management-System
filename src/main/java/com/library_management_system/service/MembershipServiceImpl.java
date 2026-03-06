@@ -3,6 +3,9 @@ package com.library_management_system.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.library_management_system.dto.AssignMembershipDTO;
@@ -11,10 +14,6 @@ import com.library_management_system.entity.User;
 import com.library_management_system.repository.MembershipRepository;
 import com.library_management_system.repository.UserRepository;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Page;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -23,6 +22,7 @@ public class MembershipServiceImpl implements MembershipService {
 
     private final MembershipRepository repository;
     private final UserRepository userRepository;
+    private final EmailService emailservice;
 @Override
 public void assignMembership(AssignMembershipDTO dto) {
 
@@ -37,6 +37,13 @@ public void assignMembership(AssignMembershipDTO dto) {
 
     user.setMembership(membership);
     userRepository.save(user);
+
+     
+emailservice.sendEmail(
+            dto.getUsername(),
+            "Membership Assigned | LibraryHub Support",
+            "Greetings, "+user.getUsername() +"\nYou have  been subscribed for "+membership.getName() +" membership plan."+ "\n Fee: "+ membership.getFee()+ "\nMax books borrowed at a time: "+membership.getBorrowLimit()+ "\n return issued books within: "+membership.getDurationDays()+ "\n\n Not returning books on time will result in fine \n If book is damaged or lost full MRP is to be paid as a fine   \n Failing to  pay membership fee will reult in revocation of membership");
+        
 }
     @Override
     public Membership create(Membership membership) {

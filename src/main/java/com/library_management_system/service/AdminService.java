@@ -6,7 +6,7 @@ import java.util.List;
 import com.library_management_system.dto.AdminDashboardDto;
 import com.library_management_system.dto.PersonalDetails;
 public interface AdminService {
-
+List<PersonalDetails> fetchAllUsers();
     List<PersonalDetails> fetchRegistrations();
 
     String approve(String username);

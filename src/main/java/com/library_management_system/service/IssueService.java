@@ -16,5 +16,5 @@ public interface IssueService {
 
     List<IssueResponseDTO> getCurrentIssued();
 
-    List<IssueResponseDTO> getHistory(Long userId);
+    List<IssueResponseDTO> getHistory(String username);
 }

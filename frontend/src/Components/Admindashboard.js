@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import "./Admindashboard.css";
+const API_BASE = "http://localhost:8080/api"; // change if needed
 
+const getAuthHeader = () => ({
+  Authorization: `Bearer ${localStorage.getItem("token")}`,
+  "Content-Type": "application/json"
+});
 /* ══════════════════════════════════════════
    SVG ICONS
 ══════════════════════════════════════════ */
@@ -40,8 +45,20 @@ const Icons = {
    MOCK DATA
 ══════════════════════════════════════════ */
 const AVATARS_COLORS = ["#FF9B7A","#6B9BD1","#A8C5A8","#C4956A","#9B8EC4","#E07A7A","#7AC4C4"];
-const avatarColor = (name) => AVATARS_COLORS[name.charCodeAt(0) % AVATARS_COLORS.length];
-const initials    = (name) => name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0,2);
+const avatarColor = (name = "") => {
+  if (!name) return "#C4956A";
+  const code = name.charCodeAt(0);
+  const colors = ["#FF9B7A", "#6B9BD1", "#98D8C8", "#C4956A"];
+  return colors[code % colors.length];
+};
+const initials = (name = "") => {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .map(n => n[0])
+    .join("")
+    .toUpperCase();
+};
 
 const mockPendingUsers = [
   { id:1, name:"Arjun Sharma",    email:"arjun@example.com",   role:"USER",      date:"2026-02-08", phone:"9876543210", city:"Mumbai" },
@@ -105,6 +122,7 @@ const NAV_ITEMS = [
   { id:"books",          label:"Book Management",   iconFn: Icons.books,    section:"MAIN"      },
   { id:"borrows",        label:"Borrows & Returns", iconFn: Icons.book,     section:"MAIN"      },
   { id:"fines",          label:"Fine Management",   iconFn: Icons.dollar,   section:"MAIN"      },
+  { id:"membership",     label:"Membership Plans",  iconFn: Icons.shield,   section:"MANAGE"    },
   { id:"users",          label:"User Management",   iconFn: Icons.users,    section:"MANAGE"    },
   { id:"notifications",  label:"Notifications",     iconFn: Icons.bell,     section:"MANAGE", badge: 3 },
   { id:"settings",       label:"Settings",          iconFn: Icons.settings, section:"SYSTEM"    },
@@ -461,8 +479,9 @@ const RegistrationsSection = ({ pending, onAction }) => {
 
 /* ── Books ── */
 const BooksSection = ({ books, onAddBook }) => {
+  const safeBooks = Array.isArray(books) ? books : [];
   const [search, setSearch] = useState("");
-  const filtered = books.filter(b =>
+  const filtered = safeBooks.filter(b =>
     b.title.toLowerCase().includes(search.toLowerCase()) ||
     b.author.toLowerCase().includes(search.toLowerCase()) ||
     b.isbn.includes(search)
@@ -554,7 +573,12 @@ const BorrowsSection = ({ borrows, onIssue }) => {
     overdue:  { label:"Overdue",  cls:"ad-badge--overdue"  },
     returned: { label:"Returned", cls:"ad-badge--returned" },
   };
-
+const ISSUE_STATUS_UI = {
+  ISSUED:   { label: "Issued",   cls: "ad-badge--active" },
+  RETURNED: { label: "Returned", cls: "ad-badge--returned" },
+  LOST:     { label: "Lost",     cls: "ad-badge--overdue" },
+  DAMAGED:  { label: "Damaged",  cls: "ad-badge--overdue" }
+};
   return (
     <div className="ad-card">
       <div className="ad-card__header">
@@ -610,8 +634,8 @@ const BorrowsSection = ({ borrows, onIssue }) => {
                   <td style={{ fontSize:"0.82rem", color:"#8B6F47" }}>{b.issued}</td>
                   <td style={{ fontSize:"0.82rem", fontWeight:600, color: b.status==="overdue"?"#e05555":"#5D4E37" }}>{b.due}</td>
                   <td>
-                    <span className={`ad-badge ${statusMap[b.status].cls} ad-badge--dot`}>
-                      {statusMap[b.status].label}
+                    <span className={`ad-badge ${ISSUE_STATUS_UI[b.status]?.cls || "ad-badge--active"} ad-badge--dot`}>
+                      {ISSUE_STATUS_UI[b.status]?.label || b.status}
                     </span>
                   </td>
                   <td>
@@ -680,79 +704,360 @@ const FinesSection = ({ fines }) => (
   </div>
 );
 
-/* ── Users ── */
-const UsersSection = () => {
-  const users = [
-    { id:1, name:"Kavya Reddy",  email:"kavya@example.com",  role:"USER",      status:"active",  joined:"2025-08-12", books:3 },
-    { id:2, name:"Aman Gupta",   email:"aman@example.com",   role:"USER",      status:"active",  joined:"2025-09-03", books:1 },
-    { id:3, name:"Ravi Patel",   email:"ravi@example.com",   role:"LIBRARIAN", status:"active",  joined:"2025-10-15", books:0 },
-    { id:4, name:"Sneha Joshi",  email:"sneha@example.com",  role:"USER",      status:"active",  joined:"2025-11-20", books:2 },
-    { id:5, name:"Vikram Nair",  email:"vikram@example.com", role:"USER",      status:"suspended", joined:"2025-07-05", books:1 },
-  ];
+/* ── Membership Plans ── */
+const MembershipSection = () => {
+  const [plans, setPlans] = useState([]);
+  useEffect(() => {
+  fetchPlans();
+}, []);
+
+const fetchPlans = async () => {
+  const res = await fetch(`${API_BASE}/memberships`, {
+    headers: getAuthHeader()
+  });
+  const data = await res.json();
+  setPlans(data);
+};
+
+  const [showModal, setShowModal] = useState(false);
+  const [editPlan, setEditPlan] = useState(null);
+  const [form, setForm] = useState({name:'',borrowLimit:'',durationDays:'',fee:'',lateFeePerDay:''});
+
+  const planColors = {BASIC:'#6B9BD1',STANDARD:'#A8C5A8',PREMIUM:'#FF9B7A',STUDENT_BASIC:'#B8D4ED'};
+  const getColor = n => planColors[n?.toUpperCase()] || '#FFD4B8';
+
+  const handleAdd = () => {
+    setForm({name:'',borrowLimit:'',durationDays:'',fee:'',lateFeePerDay:''});
+    setEditPlan(null);
+    setShowModal(true);
+  };
+
+  
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this plan?")) return;
+
+    try {
+      await fetch(`${API_BASE}/memberships/${id}`, {
+        method: "DELETE",
+        headers: getAuthHeader()
+      });
+
+      fetchPlans();
+    } catch {
+      console.error("Delete failed");
+    }
+  };
+const handleEdit = (plan) => {
+  setEditPlan(plan);
+  setForm({
+    name: plan.name,
+    borrowLimit: plan.borrowLimit,
+    durationDays: plan.durationDays,
+    fee: plan.fee,
+    lateFeePerDay: plan.lateFeePerDay
+  });
+  setShowModal(true);
+};
+     const handleSave = async () => {
+    try {
+      if (editPlan) {
+        await fetch(`${API_BASE}/memberships/${editPlan.id}`, {
+          method: "PUT",
+          headers: getAuthHeader(),
+          body: JSON.stringify(form)
+        });
+      } else {
+        await fetch(`${API_BASE}/memberships`, {
+          method: "POST",
+          headers: getAuthHeader(),
+          body: JSON.stringify(form)
+        });
+      }
+
+      setShowModal(false);
+      fetchPlans(); // refresh list
+    } catch {
+      console.error("Save failed");
+    }
+  };
+
+
   return (
-    <div className="ad-card">
-      <div className="ad-card__header">
-        <div className="ad-card__title-wrap">
-          {Icons.users(18,"#FF9B7A")}
-          <div>
-            <div className="ad-card__title">User Management</div>
-            <div className="ad-card__subtitle">{users.length} registered members</div>
+    <>
+      <div className="ad-card">
+        <div className="ad-card__header">
+          <div className="ad-card__title-wrap">
+            {Icons.shield(18,"#FF9B7A")}
+            <div>
+              <div className="ad-card__title">Membership Plans</div>
+              <div className="ad-card__subtitle">{plans.length} active plans</div>
+            </div>
+          </div>
+          <button className="ad-pill ad-pill--filled" onClick={handleAdd}>
+            {Icons.plus(13,"white")} Add Plan
+          </button>
+        </div>
+        <div className="ad-card__body">
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:'1.5rem'}}>
+            {plans.map(p=>{
+              const col=getColor(p.name);
+              return(
+                <div key={p.id} style={{padding:'1.5rem',background:'white',borderRadius:16,border:`2px solid ${col}30`,position:'relative'}}>
+                  <div style={{position:'absolute',top:12,left:12,display:'flex',gap:'0.3rem'}}>
+                    <button onClick={()=>handleEdit(p)} style={{width:28,height:28,borderRadius:6,background:'rgba(107,155,209,0.1)',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>{Icons.edit(12,'#6B9BD1')}</button>
+                    <button onClick={()=>handleDelete(p.id)} style={{width:28,height:28,borderRadius:6,background:'rgba(224,85,85,0.1)',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>{Icons.x(12,'#e05555')}</button>
+                  </div>
+                  <div style={{width:56,height:56,borderRadius:12,background:`${col}18`,border:`2px solid ${col}30`,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'1rem',marginTop:'1.5rem'}}>
+                    {Icons.shield(28,col)}
+                  </div>
+                  <h3 style={{fontSize:'1.2rem',fontWeight:700,color:'#3D2817',marginBottom:'0.3rem'}}>{p.name.replace(/_/g,' ')}</h3>
+                  <div style={{fontSize:'2rem',fontWeight:700,color:col,marginBottom:'1.5rem'}}>₹{p.fee}<span style={{fontSize:'0.9rem',fontWeight:400,color:'#8B6F47'}}>/plan</span></div>
+                  <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}>
+                    {[
+                      {l:`${p.borrowLimit} books at a time`,i:Icons.book},
+                      {l:`${p.durationDays} day loan period`,i:Icons.clock},
+                      {l:`₹${p.lateFeePerDay}/day late fee`,i:Icons.dollar},
+                    ].map((f,i)=>(
+                      <div key={i} style={{display:'flex',alignItems:'center',gap:'0.6rem',fontSize:'0.85rem',color:'#5D4E37'}}>{f.i(14,col)}<span>{f.l}</span></div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
-        <button className="ad-pill ad-pill--outline">{Icons.refresh(12,"#FF9B7A")} Refresh</button>
       </div>
-      <div className="ad-card__body" style={{ padding:0 }}>
-        <div className="ad-table-wrap">
-          <table className="ad-table">
-            <thead>
-              <tr>
-                <th>Member</th>
-                <th>Role</th>
-                <th>Books Held</th>
-                <th>Joined</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map(u => (
-                <tr key={u.id}>
-                  <td>
-                    <div className="ad-table__user">
-                      <div className="ad-table__avatar" style={{ background: avatarColor(u.name) }}>
-                        {initials(u.name)}
-                      </div>
-                      <div>
-                        <div className="ad-table__name">{u.name}</div>
-                        <div className="ad-table__email">{u.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`ad-badge ${u.role==="LIBRARIAN"?"ad-badge--returned":"ad-badge--active"} ad-badge--dot`}>
-                      {u.role}
-                    </span>
-                  </td>
-                  <td style={{ fontWeight:600, color: u.books > 0 ? "#FF9B7A" : "#C4956A" }}>{u.books}</td>
-                  <td style={{ fontSize:"0.82rem", color:"#8B6F47" }}>{u.joined}</td>
-                  <td>
-                    <span className={`ad-badge ad-badge--dot ${u.status==="active"?"ad-badge--active":"ad-badge--overdue"}`}>
-                      {u.status.charAt(0).toUpperCase()+u.status.slice(1)}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="ad-actions-cell">
-                      <button className="ad-action-btn ad-action-btn--view" title="View">{Icons.eye(13,"#1565c0")}</button>
-                      <button className="ad-action-btn ad-action-btn--edit" title="Edit">{Icons.edit(13,"#cc5522")}</button>
-                    </div>
-                  </td>
+
+      {showModal&&(
+        <div className="ad-modal-overlay" onClick={()=>setShowModal(false)}>
+          <div className="ad-modal" onClick={e=>e.stopPropagation()}>
+            <button className="ad-modal__close" onClick={()=>setShowModal(false)}>{Icons.x(14)}</button>
+            <h3 className="ad-modal__title">{editPlan?'Edit Plan':'Add New Plan'}</h3>
+            <div className="ad-modal__field">
+              <label className="ad-modal__label">Plan Name</label>
+              <input className="ad-modal__input" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="e.g. PREMIUM"/>
+            </div>
+            <div className="ad-modal__grid">
+              <div className="ad-modal__field">
+                <label className="ad-modal__label">Borrow Limit</label>
+                <input className="ad-modal__input" type="number" value={form.borrowLimit} onChange={e=>setForm({...form,borrowLimit:e.target.value})}/>
+              </div>
+              <div className="ad-modal__field">
+                <label className="ad-modal__label">Duration (Days)</label>
+                <input className="ad-modal__input" type="number" value={form.durationDays} onChange={e=>setForm({...form,durationDays:e.target.value})}/>
+              </div>
+            </div>
+            <div className="ad-modal__grid">
+              <div className="ad-modal__field">
+                <label className="ad-modal__label">Fee (₹)</label>
+                <input className="ad-modal__input" type="number" value={form.fee} onChange={e=>setForm({...form,fee:e.target.value})}/>
+              </div>
+              <div className="ad-modal__field">
+                <label className="ad-modal__label">Late Fee/Day (₹)</label>
+                <input className="ad-modal__input" type="number" value={form.lateFeePerDay} onChange={e=>setForm({...form,lateFeePerDay:e.target.value})}/>
+              </div>
+            </div>
+            <div className="ad-modal__actions">
+              <button className="ad-modal__btn-cancel" onClick={()=>setShowModal(false)}>Cancel</button>
+              <button className="ad-modal__btn-submit" onClick={handleSave}>{Icons.check(14,'white')} {editPlan?'Update':'Create'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+/* ── Users ── */
+const UsersSection = () => {
+  
+  const [users, setUsers] = useState([]);
+
+useEffect(() => {
+  fetchUsers();
+}, []);
+
+const fetchUsers = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/admin/users`, {
+      headers: getAuthHeader()
+    });
+
+    if (!res.ok) throw new Error();
+
+    const data = await res.json();
+
+    const mapped = (Array.isArray(data) ? data : []).map(u => ({
+      id: u.id || u.username,
+      name: `${u.firstName || ""} ${u.lastName || ""}`.trim(),
+      email: u.email || "",
+      role: u.role || "",
+      membership: u.membership?.name || "N/A",
+      books: u.currentBorrowCount || 0,
+      joined: u.createdAt || "",
+      status: u.status || "PENDING"
+    }));
+
+    setUsers(mapped);
+
+  } catch {
+    setUsers([]);
+  }
+};
+  const [selectedUser, setSelectedUser] = useState(null);
+  
+  const membershipColors = {
+    Premium: '#FF6B6B',
+    Standard: '#4ECDC4',
+    Basic: '#45B7D1',
+    Staff: '#98D8C8'
+  };
+  
+  return (
+    <>
+      <div className="ad-card">
+        <div className="ad-card__header">
+          <div className="ad-card__title-wrap">
+            {Icons.users(18,"#FF9B7A")}
+            <div>
+              <div className="ad-card__title">User Management</div>
+              <div className="ad-card__subtitle">{users.length} registered members</div>
+            </div>
+          </div>
+          <button className="ad-pill ad-pill--outline">{Icons.refresh(12,"#FF9B7A")} Refresh</button>
+        </div>
+        <div className="ad-card__body" style={{ padding:0 }}>
+          <div className="ad-table-wrap">
+            <table className="ad-table">
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Role</th>
+                  <th>Membership</th>
+                  <th>Books Held</th>
+                  <th>Joined</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {users.map(u => (
+                  <tr key={u.id}>
+                    <td>
+                      <div className="ad-table__user">
+                        <div className="ad-table__avatar" style={{ background: avatarColor(u.name) }}>
+                          {initials(u.name)}
+                        </div>
+                        <div>
+                          <div className="ad-table__name">{u.name}</div>
+                          <div className="ad-table__email">{u.email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`ad-badge ${u.role==="LIBRARIAN"?"ad-badge--returned":"ad-badge--active"} ad-badge--dot`}>
+                        {u.role}
+                      </span>
+                    </td>
+                    <td>
+                      <span style={{display:'inline-block',padding:'0.3rem 0.7rem',borderRadius:'50px',fontSize:'0.75rem',fontWeight:700,background:`${membershipColors[u.membership]}20`,color:membershipColors[u.membership],border:`1.5px solid ${membershipColors[u.membership]}40`}}>
+                        {u.membership}
+                      </span>
+                    </td>
+                    <td style={{ fontWeight:600, color: u.books > 0 ? "#FF9B7A" : "#C4956A" }}>{u.books}</td>
+                    <td style={{ fontSize:"0.82rem", color:"#8B6F47" }}>{u.joined}</td>
+                    <td>
+                      <span className={`ad-badge ad-badge--dot ${u.status==="active"?"ad-badge--active":"ad-badge--overdue"}`}>
+                        {u.status ? u.status.charAt(0).toUpperCase() + u.status.slice(1) : "N/A"}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="ad-actions-cell">
+                        <button className="ad-action-btn ad-action-btn--view" title="View Details" onClick={() => setSelectedUser(u)}>{Icons.eye(13,"#1565c0")}</button>
+                        <button className="ad-action-btn ad-action-btn--edit" title="Edit">{Icons.edit(13,"#cc5522")}</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
+      
+      {/* User Detail Modal */}
+      {selectedUser && (
+        <div className="ad-modal-overlay" onClick={() => setSelectedUser(null)}>
+          <div className="ad-modal" style={{maxWidth:500}} onClick={e => e.stopPropagation()}>
+            <button className="ad-modal__close" onClick={() => setSelectedUser(null)}>{Icons.x(14)}</button>
+            <div style={{textAlign:'center',marginBottom:'1.5rem'}}>
+              <div className="ad-table__avatar" style={{background:avatarColor(selectedUser.name),width:80,height:80,fontSize:'1.8rem',margin:'0 auto 1rem'}}>
+                {initials(selectedUser.name)}
+              </div>
+              <h3 className="ad-modal__title" style={{marginBottom:'0.3rem'}}>{selectedUser.name}</h3>
+              <p className="ad-modal__sub">{selectedUser.email}</p>
+            </div>
+            
+            <div style={{display:'grid',gap:'1rem'}}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem'}}>
+                <div className="ad-modal__field">
+                  <label className="ad-modal__label">Role</label>
+                  <span className={`ad-badge ${selectedUser.role==="LIBRARIAN"?"ad-badge--returned":"ad-badge--active"} ad-badge--dot`}>
+                    {selectedUser.role}
+                  </span>
+                </div>
+                <div className="ad-modal__field">
+                  <label className="ad-modal__label">Status</label>
+                  <span className={`ad-badge ad-badge--dot ${selectedUser.status==="active"?"ad-badge--active":"ad-badge--overdue"}`}>
+                    {selectedUser.status.charAt(0).toUpperCase()+selectedUser.status.slice(1)}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="ad-modal__field">
+                <label className="ad-modal__label">Membership Plan</label>
+                <div style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
+                  <span style={{display:'inline-block',padding:'0.4rem 1rem',borderRadius:'50px',fontSize:'0.85rem',fontWeight:700,background:`${membershipColors[selectedUser.membership]}20`,color:membershipColors[selectedUser.membership],border:`2px solid ${membershipColors[selectedUser.membership]}40`}}>
+                    {selectedUser.membership}
+                  </span>
+                  {selectedUser.expiryDate !== 'N/A' && (
+                    <span style={{fontSize:'0.8rem',color:'#8B6F47'}}>Expires: {selectedUser.expiryDate}</span>
+                  )}
+                </div>
+              </div>
+              
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem'}}>
+                <div className="ad-modal__field">
+                  <label className="ad-modal__label">Phone</label>
+                  <div style={{fontSize:'0.9rem',color:'#5D4E37',fontFamily:'monospace'}}>{selectedUser.phone}</div>
+                </div>
+                <div className="ad-modal__field">
+                  <label className="ad-modal__label">City</label>
+                  <div style={{fontSize:'0.9rem',color:'#5D4E37'}}>{selectedUser.city}</div>
+                </div>
+              </div>
+              
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem'}}>
+                <div className="ad-modal__field">
+                  <label className="ad-modal__label">Books Held</label>
+                  <div style={{fontSize:'1.2rem',fontWeight:700,color:selectedUser.books>0?'#FF9B7A':'#4CAF50'}}>{selectedUser.books}</div>
+                </div>
+                <div className="ad-modal__field">
+                  <label className="ad-modal__label">Member Since</label>
+                  <div style={{fontSize:'0.9rem',color:'#5D4E37'}}>{selectedUser.joined}</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="ad-modal__actions" style={{marginTop:'1.5rem'}}>
+              <button className="ad-modal__btn-cancel" onClick={() => setSelectedUser(null)}>Close</button>
+              <button className="ad-modal__btn-submit">{Icons.edit(14,'white')} Edit User</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
@@ -827,10 +1132,42 @@ const AdminDashboard = () => {
   const [showAddBook,  setShowAddBook]  = useState(false);
   const [showIssue,    setShowIssue]    = useState(false);
   const [toasts,       setToasts]       = useState([]);
-  const [pending,      setPending]      = useState(mockPendingUsers);
-  const [books,        setBooks]        = useState(mockBooks);
+ const [pending, setPending] = useState([]);
+const [books, setBooks] = useState([]);
+const [borrows, setBorrows] = useState([]);
+const [fines, setFines] = useState([]);
+const [dashboardStats, setDashboardStats] = useState(null);
+useEffect(() => {
+  fetchDashboard();
+  fetchRegistrations();
+  fetchBooks();
+  fetchBorrows();
+  fetchFines();
+}, []);
 
-  /* toast helper */
+
+  /* toast helper */const fetchDashboard = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/admin/dashboard`, {
+      headers: getAuthHeader()
+    });
+    const data = await res.json();
+    setDashboardStats(data);
+  } catch (err) {
+    toast("Failed to load dashboard", "error");
+  }
+};
+const fetchRegistrations = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/admin/registrations`, {
+      headers: getAuthHeader()
+    });
+    const data = await res.json();
+    setPending(data);
+  } catch {
+    toast("Failed to load registrations", "error");
+  }
+};
   const toast = (msg, type = "success") => {
     const id = Date.now();
     setToasts(t => [...t, { id, msg, type }]);
@@ -844,6 +1181,7 @@ const AdminDashboard = () => {
     books:          "Book Management",
     borrows:        "Borrows & Returns",
     fines:          "Fine Management",
+    membership:     "Membership Plans",
     users:          "User Management",
     notifications:  "Notifications",
     settings:       "Settings",
@@ -856,16 +1194,46 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleConfirm = (userId, action) => {
-    setPending(p => p.filter(u => u.id !== userId));
+  const handleConfirm = async (username, action) => {
+  try {
+    await fetch(`${API_BASE}/admin/${action}/${username}`, {
+      method: "PUT",
+      headers: getAuthHeader()
+    });
+
     setConfirmModal(null);
+    fetchRegistrations();
     toast(
       action === "approve"
-        ? "Registration approved! Credentials sent via email."
-        : "Registration rejected and removed.",
-      action === "approve" ? "success" : "error"
+        ? "User approved successfully"
+        : "User rejected successfully"
     );
-  };
+  } catch {
+    toast("Action failed", "error");
+  }
+};
+const fetchBooks = async (page = 0, size = 10) => {
+  try {
+    const res = await fetch(
+      `${API_BASE}/books?page=${page}&size=${size}`,
+      { headers: getAuthHeader() }
+    );
+
+    if (!res.ok) throw new Error();
+
+    const data = await res.json();
+
+    // Your API returns Page<Book>
+    setBooks(data.content || []);
+    
+    // optional: store pagination meta if needed
+    
+
+  } catch {
+    toast("Failed to load books", "error");
+    setBooks([]);
+  }
+};
 
   /* quick action nav */
   const handleQuickAction = (action) => {
@@ -877,15 +1245,58 @@ const AdminDashboard = () => {
     toast("Feature coming soon!", "success");
   };
 
-  const handleAddBook = (form) => {
-    const newBook = { id: books.length+1, ...form, total: parseInt(form.total)||1, available: parseInt(form.total)||1 };
-    setBooks(b => [...b, newBook]);
-    toast(`"${form.title}" added to catalogue.`);
-  };
+  const handleAddBook = async (form) => {
+  try {
+    await fetch(`${API_BASE}/books`, {
+      method: "POST",
+      headers: getAuthHeader(),
+      body: JSON.stringify(form)
+    });
 
-  const handleIssue = (form) => {
-    toast(`Book issued to ${form.username}.`);
-  };
+    fetchBooks();
+    toast("Book added successfully");
+  } catch {
+    toast("Failed to add book", "error");
+  }
+};
+
+const fetchBorrows = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/issues`, {
+      headers: getAuthHeader()
+    });
+    const data = await res.json();
+    setBorrows(data);
+  } catch {
+    toast("Failed to load issues", "error");
+  }
+};
+
+ const handleIssue = async (form) => {
+  try {
+    await fetch(`${API_BASE}/issues`, {
+      method: "POST",
+      headers: getAuthHeader(),
+      body: JSON.stringify(form)
+    });
+
+    fetchBorrows();
+    toast(`Book issued to ${form.username}`);
+  } catch {
+    toast("Issue failed", "error");
+  }
+};
+const fetchFines = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/fines`, {
+      headers: getAuthHeader()
+    });
+    const data = await res.json();
+    setFines(data);
+  } catch {
+    toast("Failed to load fines", "error");
+  }
+};
 
   const sections = NAV_ITEMS.reduce((acc, item) => {
     if (!acc[item.section]) acc[item.section] = [];
@@ -942,7 +1353,10 @@ const AdminDashboard = () => {
           <button
             className="ad-nav__item"
             style={{ color:"rgba(255,212,184,0.5)", marginTop:"0.25rem" }}
-            onClick={() => alert("Logout (connect to your API)")}
+            onClick={() => {
+  localStorage.removeItem("token");
+  window.location.href = "/login";
+}}
           >
             <span className="ad-nav__icon">{Icons.logout(18,"rgba(255,212,184,0.5)")}</span>
             <span className="ad-nav__text">Logout</span>
@@ -983,7 +1397,7 @@ const AdminDashboard = () => {
         <div className="ad-content">
 
           {activeNav === "overview" && (
-            <OverviewSection onQuickAction={handleQuickAction} />
+            <OverviewSection stats ={dashboardStats} />
           )}
 
           {activeNav === "registrations" && (
@@ -1001,14 +1415,15 @@ const AdminDashboard = () => {
           )}
 
           {activeNav === "borrows" && (
-            <BorrowsSection
-              borrows={mockBorrows}
-              onIssue={() => setShowIssue(true)}
-            />
+            <BorrowsSection borrows={borrows} onIssue={() => setShowIssue(true)} />
           )}
 
           {activeNav === "fines" && (
-            <FinesSection fines={mockFines} />
+            <FinesSection fines={fines} />
+          )}
+
+          {activeNav === "membership" && (
+            <MembershipSection />
           )}
 
           {activeNav === "users" && (

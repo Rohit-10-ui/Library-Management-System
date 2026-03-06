@@ -32,6 +32,10 @@ public ResponseEntity<AdminDashboardDto> dashboard() {
     public ResponseEntity<List<PersonalDetails>> registrations() {
         return ResponseEntity.ok(service.fetchRegistrations());
     }
+    @GetMapping("/users")
+    public ResponseEntity<List<PersonalDetails>> allusers() {
+        return ResponseEntity.ok(service.fetchAllUsers());
+    }
 
     @PostMapping("/approve/{username}")
     public ResponseEntity<String> approve(@PathVariable String username) {

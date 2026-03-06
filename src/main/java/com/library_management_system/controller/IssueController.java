@@ -56,9 +56,9 @@ public class IssueController {
         return ResponseEntity.ok(service.getCurrentIssued());
     }
 
-    @GetMapping("/members/{userId}/history")
+    @GetMapping("/members/{username}/history")
     public ResponseEntity<List<IssueResponseDTO>> history(
-            @PathVariable Long userId) {
-        return ResponseEntity.ok(service.getHistory(userId));
+            @PathVariable String username) {
+        return ResponseEntity.ok(service.getHistory(username));
     }
 }
