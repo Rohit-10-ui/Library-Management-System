@@ -14,6 +14,8 @@ import com.library_management_system.entity.Issue;
 import com.library_management_system.entity.IssueStatus;
 import com.library_management_system.entity.User;
 import com.library_management_system.exception.BusinessException;
+import com.library_management_system.exception.BusinessException2;
+
 import com.library_management_system.exception.ResourceNotFoundException;
 import com.library_management_system.repository.BookRepository;
 import com.library_management_system.repository.IssueRepository;
@@ -50,22 +52,29 @@ emailservice.sendEmail(
         log.info("Book issued to {} : {}", user.getUsername(), book.getTitle());
         return mapToDTO(issueRepo.save(issue));
     }
+@Override
+public IssueResponseDTO returnBook(ReturnRequestDTO dto) {
 
-    @Override
-    public IssueResponseDTO returnBook(ReturnRequestDTO dto) {
+    Issue issue = getIssue(dto.getIssueId());
+    Book book = issue.getBook();
 
-        Issue issue = getIssue(dto.getIssueId());
-        Book book = issue.getBook();
+    double penalty = calculatePenalty(issue, dto.getStatus());
 
-        double penalty = calculatePenalty(issue, dto.getStatus());
+    issue.setPenalty(penalty);
+    issueRepo.save(issue);
 
-        updateReturnDetails(issue, dto.getStatus(), penalty);
-        updateAvailability(book, 1);
+    IssueResponseDTO response = mapToDTO(issue);
 
-        log.info("Book returned: {}", book.getTitle());
-        return mapToDTO(issueRepo.save(issue));
+    if (penalty > 0) {
+        response.setPaymentRequired(true);
+        return response;
     }
 
+    updateReturnDetails(issue, dto.getStatus(), penalty);
+    updateAvailability(book, 1);
+
+    return mapToDTO(issueRepo.save(issue));
+}
     @Override
 public List<IssueResponseDTO> getCurrentIssued() {
 

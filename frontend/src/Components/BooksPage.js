@@ -34,6 +34,21 @@ const api = {
       status
     })
   }).then(r => r.json()),
+
+createFinePayment: async (issueId) => {
+  const res = await fetch(`${BASE_URL}/payments/fine/${issueId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" }
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
+  }
+
+  return res.json();
+}
+
 };
 
 // ─── Icons ──────────────────────────────────────────────────────────────────
@@ -136,6 +151,10 @@ const [returnStatus, setReturnStatus] = useState('RETURNED');
     {id:5,name:'arjunsharma',  status:'active',membershipType:'standard'},
     {id:6,name:'vachiravit',status:'active',membershipType:'basic'},
   ];
+
+  const [paymentData, setPaymentData] = useState(null);
+const [showPayment, setShowPayment] = useState(false);
+
 useEffect(() => {
   if (actualRole === 'user') {
     setTab('catalog');
@@ -182,7 +201,65 @@ const fetchIssues = useCallback(async () => {
     setIssLoad(false);
   }
 }, []);
+const submitReturn = async (e) => {
+  e.preventDefault();
+  e.stopPropagation();
 
+  setActionLoad(true);
+
+  try {
+
+    const res = await fetch(`${BASE_URL}/returns`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        issueId: returnRec.id,
+        status: returnStatus
+      })
+    });
+
+    const data = await res.json();
+
+    // fine payment required
+    if (data.paymentRequired) {
+
+      const payment = await api.createFinePayment(returnRec.id);
+
+      setPaymentData(payment);
+      setShowPayment(true);
+
+      
+
+if (payment && payment.paymentUrl) {
+  window.location.assign(payment.paymentUrl);
+  return;
+}
+
+      return;
+    }
+
+    // normal return
+    setToast({
+      show: true,
+      msg: "Book returned successfully",
+      type: "success"
+    });
+
+    setReturnRec(null);
+    fetchIssues();
+
+  } catch (err) {
+
+    setToast({
+      show: true,
+      msg: "Return failed",
+      type: "error"
+    });
+
+  } finally {
+    setActionLoad(false);
+  }
+};
   useEffect(()=>{fetchBooks();},[fetchBooks]);
   useEffect(()=>{fetchIssues();},[fetchIssues]);
 
@@ -308,41 +385,43 @@ const fetchIssues = useCallback(async () => {
     setIssueBook(null);
   }
 };
-const submitReturn = async (e) => {
-  e.preventDefault();
-  setActionLoad(true);
 
+
+const handleReturnBook = async () => {
   try {
-    await api.returnBook(returnRec.id, returnStatus);
 
-    setIssues(prev =>
-      prev.map(r =>
-        r.id === returnRec.id
-          ? {
-              ...r,
-              status: returnStatus.toLowerCase(),
-              returnDate: new Date().toISOString().split('T')[0]
-            }
-          : r
-      )
-    );
+    const res = await api.returnBook(returnRec.id, returnStatus);
 
-    if (returnStatus === 'RETURNED') {
-      setBooks(prev =>
-        prev.map(b =>
-          b.id === returnRec.bookId
-            ? { ...b, availability: b.availability + 1 }
-            : b
-        )
-      );
+    if (res.paymentRequired) {
+
+      const payment = await api.createFinePayment(returnRec.id);
+
+      setPaymentData(payment);
+      setShowPayment(true);
+
+      if (payment.paymentUrl) {
+        window.location.href = payment.paymentUrl;
+      }
+
+    } else {
+
+      setToast({
+        show: true,
+        msg: "Book returned successfully",
+        type: "success"
+      });
+
+      fetchIssues();
     }
 
-    toast$('Updated successfully');
-  } catch {
-    toast$('Update failed', 'error');
-  } finally {
-    setActionLoad(false);
-    setReturnRec(null);
+  } catch (e) {
+
+    setToast({
+      show: true,
+      msg: "Return failed",
+      type: "error"
+    });
+
   }
 };
 
@@ -797,7 +876,45 @@ const submitReturn = async (e) => {
           </div>
         </div>
       )}
+{showPayment && paymentData && (
+  <div className="overlay" onClick={()=>setShowPayment(false)}>
+    <div className="modal" onClick={e=>e.stopPropagation()}>
 
+      <div className="modal-head">
+        <h2>Pay Fine</h2>
+        <button onClick={()=>setShowPayment(false)}>
+          <Ic.Close s={18}/>
+        </button>
+      </div>
+
+      <div style={{textAlign:"center",padding:"20px"}}>
+
+        <p>Fine Amount</p>
+        <h2>₹{paymentData.amount}</h2>
+
+        <img
+          src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${paymentData.qrData}`}
+          alt="payment qr"
+        />
+
+        <p style={{marginTop:10,fontSize:12}}>
+          Scan with UPI / PhonePe / GPay
+        </p>
+
+        <a
+          href={paymentData.paymentUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="btn-primary"
+        >
+          Open Payment Page
+        </a>
+
+      </div>
+
+    </div>
+  </div>
+)}
       {/* Toast */}
       {toast.show&&(
         <div className={`bp-toast ${toast.type}`}>
@@ -805,9 +922,17 @@ const submitReturn = async (e) => {
           {toast.msg}
         </div>
       )}
+
+
+
+      
     </div>
   );
 };
+
+
+
+
 
 const FS=({title,children})=><div className="fsec"><h4>{title}</h4><div className="flist">{children}</div></div>;
 export default BooksPage;

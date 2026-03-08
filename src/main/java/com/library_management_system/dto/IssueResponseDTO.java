@@ -21,4 +21,5 @@ public class IssueResponseDTO {
 
     private double penalty;
     private IssueStatus status;
+    private boolean paymentRequired;
 }
