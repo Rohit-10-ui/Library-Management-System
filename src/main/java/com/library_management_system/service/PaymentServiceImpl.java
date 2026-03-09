@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.library_management_system.dto.PaymentResponseDTO;
 import com.library_management_system.entity.Issue;
+import com.library_management_system.entity.IssueStatus;
 import com.library_management_system.entity.Payment;
 import com.library_management_system.repository.IssueRepository;
 import com.library_management_system.repository.PaymentRepository;
@@ -44,7 +45,7 @@ public class PaymentServiceImpl implements PaymentService {
             SessionCreateParams params =
                     SessionCreateParams.builder()
                             .setMode(SessionCreateParams.Mode.PAYMENT)
-                            .setSuccessUrl("http://localhost:3000/payment-success")
+                            .setSuccessUrl("http://localhost:3000/payment-success?session_id={CHECKOUT_SESSION_ID}")
                             .setCancelUrl("http://localhost:3000/payment-failed")
                             .addLineItem(
                                     SessionCreateParams.LineItem.builder()
@@ -92,18 +93,39 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    @Override
-    public void confirmPayment(String sessionId) {
+   @Override
+public void confirmPayment(String sessionId) {
 
-        Payment payment =
-                paymentRepo.findAll()
-                        .stream()
-                        .filter(p -> sessionId.equals(p.getSessionId()))
-                        .findFirst()
-                        .orElseThrow(() -> new RuntimeException("Payment not found"));
+    try {
 
+        Stripe.apiKey = stripeKey;
+
+        Session session = Session.retrieve(sessionId);
+
+        if (!"paid".equals(session.getPaymentStatus())) {
+            throw new RuntimeException("Payment not completed");
+        }
+
+        Payment payment = paymentRepo.findAll()
+                .stream()
+                .filter(p -> sessionId.equals(p.getSessionId()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Payment not found"));
+
+        // update payment
         payment.setStatus("PAID");
-
         paymentRepo.save(payment);
+
+        // update issue
+        Issue issue = payment.getIssue();
+
+        issue.setStatus(IssueStatus.RETURNED);   // or "FINE_PAID"
+        issue.setPenalty(0.0);
+
+        issueRepo.save(issue);
+
+    } catch (Exception e) {
+        throw new RuntimeException(e);
     }
+}
 }
